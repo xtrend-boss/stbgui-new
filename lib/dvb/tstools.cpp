@@ -6,9 +6,11 @@
 
 #include <stdio.h>
 
+static const int m_maxrange = 256*1024;
+
+
 eDVBTSTools::eDVBTSTools():
 	m_pid(-1),
-	m_maxrange(256*1024),
 	m_begin_valid (0),
 	m_end_valid(0),
 	m_samples_taken(0),
@@ -32,7 +34,7 @@ int eDVBTSTools::openFile(const char *filename, int nostreaminfo)
 	eRawFile *f = new eRawFile();
 	ePtr<iTsSource> src = f;
 
-	if (f->open(filename, 1) < 0)
+	if (f->openCached(filename) < 0)
 		return -1;
 
 	setSource(src, nostreaminfo ? NULL : filename);
@@ -42,7 +44,7 @@ int eDVBTSTools::openFile(const char *filename, int nostreaminfo)
 
 void eDVBTSTools::setSource(ePtr<iTsSource> &source, const char *stream_info_filename)
 {
-	closeFile();
+	closeSource();
 	m_source = source;
 	if (stream_info_filename)
 	{
@@ -50,22 +52,6 @@ void eDVBTSTools::setSource(ePtr<iTsSource> &source, const char *stream_info_fil
 		m_streaminfo.load(stream_info_filename);
 	}
 	m_samples_taken = 0;
-}
-
-void eDVBTSTools::closeFile()
-{
-	if (m_source)
-		closeSource();
-}
-
-void eDVBTSTools::setSyncPID(int pid)
-{
-	m_pid = pid;
-}
-
-void eDVBTSTools::setSearchRange(int maxrange)
-{
-	m_maxrange = maxrange;
 }
 
 	/* getPTS extracts a pts value from any PID at a given offset. */
@@ -464,7 +450,7 @@ void eDVBTSTools::calcEnd()
 	// If there's a structure file, the calculation is much smarter, so we can try more often
 	off_t threshold = m_streaminfo.hasStructure() ? 100*1024 : 1024*1024;
 
-	off_t end = m_source->lseek(0, SEEK_END);
+	off_t end = m_source->length();
 	if (llabs(end - m_last_filelength) > threshold)
 	{
 		m_last_filelength = end;

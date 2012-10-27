@@ -6,6 +6,8 @@ class RcModel:
 	RCTYPE_ET6X00 = 2
 	RCTYPE_ET9500 = 3
 	RCTYPE_VU = 4
+	RCTYPE_ET6500 = 5
+	RCTYPE_ET4000 = 6
 
 	def __init__(self):
 		self.currentRcType = self.RCTYPE_DMM
@@ -39,6 +41,14 @@ class RcModel:
 					self.currentRcType = self.RCTYPE_VU
 				elif rc == '9':
 					self.currentRcType = self.RCTYPE_ET9500
+				elif rc == '9' and model == 'et6500':
+					self.currentRcType = self.RCTYPE_ET6500
+				elif rc == '11' and model == 'et9200':
+					self.currentRcType = self.RCTYPE_ET9500
+				elif rc == '11' and model == 'et9000':
+					self.currentRcType = self.RCTYPE_ET9x00
+				elif rc == '13' and model == 'et4000':
+					self.currentRcType = self.RCTYPE_ET4000	
 		elif os.path.exists('/proc/stb/info/vumodel'):
 			self.currentRcType = self.RCTYPE_VU
 
@@ -49,6 +59,10 @@ class RcModel:
 			return '/usr/share/enigma2/rc_models/et9500/'
 		elif self.currentRcType == self.RCTYPE_ET6X00:
 			return '/usr/share/enigma2/rc_models/et6x00/'
+		elif self.currentRcType == self.RCTYPE_ET6500:
+			return '/usr/share/enigma2/rc_models/et6500/'
+		elif self.currentRcType == self.RCTYPE_ET4000:
+			return '/usr/share/enigma2/rc_models/et4000/'	
 		elif self.currentRcType == self.RCTYPE_VU:
 			return '/usr/share/enigma2/rc_models/vu/'
 

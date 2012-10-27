@@ -1,1 +1,1 @@
-SUBDIRS = et6x00 et9x00 et9500 vu
+SUBDIRS = et4000 et6500 et6x00 et9x00 et9500 vu

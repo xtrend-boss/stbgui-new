@@ -40,13 +40,14 @@ class RcModel:
                         elif model == 'et9500':
                                  self.currentRcType = self.RCTYPE_ET9500
 
-                        rc = self.readFile('/proc/stb/ir/rc/type')
-                        if rc == '4':
-                                self.currentRcType = self.RCTYPE_DMM
-                        elif rc == '6':
-				self.currentRcType = self.RCTYPE_DMM
-                        elif rc == '9':
-                                self.currentRcType = self.RCTYPE_VU
+                        if not len(model) == 6 and model[:2] == 'et':
+                            rc = self.readFile('/proc/stb/ir/rc/type')
+                            if rc == '4':
+                                    self.currentRcType = self.RCTYPE_DMM
+                            elif rc == '6':
+				    self.currentRcType = self.RCTYPE_DMM
+                            elif rc == '9':
+                                    self.currentRcType = self.RCTYPE_VU
 		elif os.path.exists('/proc/stb/info/vumodel'):
 			self.currentRcType = self.RCTYPE_VU
 

@@ -24,31 +24,29 @@ class RcModel:
 		fp.close()
 		return out.split()[0]
 
-	def readRcTypeFromProc(self):
+        def readRcTypeFromProc(self):
 		if os.path.exists('/proc/stb/info/boxtype'):
 			model = self.readFile('/proc/stb/info/boxtype')
-			if len(model) == 6 and model[:2] == 'et':
-				rc = self.readFile('/proc/stb/ir/rc/type')
-				if rc == '4':
-					self.currentRcType = self.RCTYPE_DMM
-				elif rc == '5' or rc == '11':
-					self.currentRcType = self.RCTYPE_ET9X00
-				elif rc == '6':
-					self.currentRcType = self.RCTYPE_DMM
-				elif rc == '7':
-					self.currentRcType = self.RCTYPE_ET6X00
-				elif rc == '8':
-					self.currentRcType = self.RCTYPE_VU
-				elif rc == '9':
-					self.currentRcType = self.RCTYPE_ET9500
-				elif rc == '9' and model == 'et6500':
-					self.currentRcType = self.RCTYPE_ET6500
-				elif rc == '11' and model == 'et9200':
-					self.currentRcType = self.RCTYPE_ET9500
-				elif rc == '11' and model == 'et9000':
-					self.currentRcType = self.RCTYPE_ET9x00
-				elif rc == '13' and model == 'et4000':
-					self.currentRcType = self.RCTYPE_ET4000	
+                        if model == 'et4000':
+                                 self.currentRcType = self.RCTYPE_ET4000
+                        elif model == 'et9000':
+                                 self.currentRcType = self.RCTYPE_ET9X00
+                        elif model == 'et9200':
+                                 self.currentRcType = self.RCTYPE_ET9X00
+                        elif model == 'et6500':
+                                 self.currentRcType = self.RCTYPE_ET6500
+                        elif model == 'et6000':
+                                 self.currentRcType = self.RCTYPE_ET6X00
+                        elif model == 'et9500':
+                                 self.currentRcType = self.RCTYPE_ET9500
+
+                        rc = self.readFile('/proc/stb/ir/rc/type')
+                        if rc == '4':
+                                self.currentRcType = self.RCTYPE_DMM
+                        elif rc == '6':
+				self.currentRcType = self.RCTYPE_DMM
+                        elif rc == '9':
+                                self.currentRcType = self.RCTYPE_VU
 		elif os.path.exists('/proc/stb/info/vumodel'):
 			self.currentRcType = self.RCTYPE_VU
 

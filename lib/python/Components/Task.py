@@ -39,7 +39,7 @@ class Job(object):
 	progress = property(getProgress)
 
 	def getStatustext(self):
-		return { self.NOT_STARTED: _("Waiting"), self.IN_PROGRESS: _("In Progress"), self.FINISHED: _("Finished"), self.FAILED: _("Failed") }[self.status]
+		return { self.NOT_STARTED: _("Waiting"), self.IN_PROGRESS: _("In progress"), self.FINISHED: _("Finished"), self.FAILED: _("Failed") }[self.status]
 
 	def task_progress_changed_CB(self):
 		self.state_changed()
@@ -335,13 +335,14 @@ class ConditionTask(Task):
 
 # The jobmanager will execute multiple jobs, each after another.
 # later, it will also support suspending jobs (and continuing them after reboot etc)
-# It also supports a notification when some error occured, and possibly a retry.
+# It also supports a notification when some error occurred, and possibly a retry.
 class JobManager:
 	def __init__(self):
 		self.active_jobs = [ ]
 		self.failed_jobs = [ ]
 		self.job_classes = [ ]
 		self.in_background = False
+		self.visible = False
 		self.active_job = None
 
 	def AddJob(self, job):
@@ -357,9 +358,9 @@ class JobManager:
 	def jobDone(self, job, task, problems):
 		print "job", job, "completed with", problems, "in", task
 		from Tools import Notifications
-		if self.in_background:
+		if not self.visible:
 			from Screens.TaskView import JobView
-			self.in_background = False
+			self.visible = True
 			Notifications.AddNotification(JobView, self.active_job)
 		if problems:
 			from Screens.MessageBox import MessageBox
@@ -401,7 +402,7 @@ class JobManager:
 #
 #class CreatePartitionTask(Task):
 #	def __init__(self, device):
-#		Task.__init__(self, _("Create Partition"))
+#		Task.__init__(self, "Creating partition")
 #		self.device = device
 #		self.setTool("/sbin/sfdisk")
 #		self.args += ["-f", self.device + "disc"]
@@ -410,7 +411,7 @@ class JobManager:
 #
 #class CreateFilesystemTask(Task):
 #	def __init__(self, device, partition = 1, largefile = True):
-#		Task.__init__(self, _("Create Filesystem"))
+#		Task.__init__(self, "Creating filesystem")
 #		self.setTool("/sbin/mkfs.ext")
 #		if largefile:
 #			self.args += ["-T", "largefile"]
@@ -419,7 +420,7 @@ class JobManager:
 #
 #class FilesystemMountTask(Task):
 #	def __init__(self, device, partition = 1, filesystem = "ext3"):
-#		Task.__init__(self, _("Mounting Filesystem"))
+#		Task.__init__(self, "Mounting filesystem")
 #		self.setTool("/bin/mount")
 #		if filesystem is not None:
 #			self.args += ["-t", filesystem]
@@ -429,7 +430,7 @@ class Condition:
 	RECOVERABLE = False
 
 	def getErrorMessage(self, task):
-		return _("An unknown error occured!") + " (%s @ task %s)" % (self.__class__.__name__, task.__class__.__name__)
+		return _("An unknown error occurred!") + " (%s @ task %s)" % (self.__class__.__name__, task.__class__.__name__)
 
 class WorkspaceExistsPrecondition(Condition):
 	def check(self, task):
@@ -450,7 +451,7 @@ class DiskspacePrecondition(Condition):
 			return False
 
 	def getErrorMessage(self, task):
-		return _("Not enough diskspace. Please free up some diskspace and try again. (%d MB required, %d MB available)") % (self.diskspace_required / 1024 / 1024, self.diskspace_available / 1024 / 1024)
+		return _("Not enough disk space. Please free up some disk space and try again. (%d MB required, %d MB available)") % (self.diskspace_required / 1024 / 1024, self.diskspace_available / 1024 / 1024)
 
 class ToolExistsPrecondition(Condition):
 	def check(self, task):

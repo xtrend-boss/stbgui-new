@@ -20,6 +20,9 @@ def InitUsageConfig():
 		refreshServiceList()
 	config.usage.alternative_number_mode.addNotifier(alternativeNumberModeChange)
 
+	config.usage.hide_number_markers = ConfigYesNo(default = False)
+	config.usage.hide_number_markers.addNotifier(refreshServiceList)
+
 	config.usage.multiepg_ask_bouquet = ConfigYesNo(default = False)
 	
 	config.usage.quickzap_bouquet_change = ConfigYesNo(default = False)
@@ -306,6 +309,13 @@ def InitUsageConfig():
 	config.subtitles.dvb_subtitles_yellow = ConfigYesNo(default = False)
 	config.subtitles.dvb_subtitles_original_position = ConfigSelection(default = "0", choices = [("0", _("Original")), ("1", _("Fixed")), ("2", _("Relative"))])
 	config.subtitles.dvb_subtitles_centered = ConfigYesNo(default = False)
+	choicelist = []
+	for i in range(-270000, 274500, 4500):
+		if i == 0:
+			choicelist.append(("0", _("No delay")))
+		else:
+			choicelist.append(("%d" % i, "%3.2f sec" % (i / 90000.)))
+	config.subtitles.subtitle_bad_timing_delay = ConfigSelection(default = "0", choices = choicelist)
 	config.subtitles.dvb_subtitles_backtrans = ConfigSelection(default = "0", choices = [
 		("0", _("No transparency")),
 		("25", "10%"),
@@ -319,6 +329,13 @@ def InitUsageConfig():
 		("225", "90%"),
 		("255", _("Full transparency"))])
 	config.subtitles.pango_subtitles_yellow = ConfigYesNo(default = False)
+	choicelist = []
+	for i in range(-900000, 945000, 45000):
+		if i == 0:
+			choicelist.append(("0", _("No delay")))
+		else:
+			choicelist.append(("%d" % i, "%2.1f sec" % (i / 90000.)))
+	config.subtitles.pango_subtitles_delay = ConfigSelection(default = "0", choices = choicelist)
 
 	config.autolanguage = ConfigSubsection()
 	audio_language_choices=[

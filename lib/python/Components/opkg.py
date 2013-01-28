@@ -15,7 +15,7 @@ def enumPlugins(filter_start=''):
 	for feed in enumFeeds():
 		package = None
 		try:
-			for line in open('/var/lib/opkg/%s' % feed, 'r'):
+			for line in open('/var/lib/opkg/lists/%s' % feed, 'r'):
 				if line.startswith('Package:'):
 					package = line[8:].strip()
 					version = ''
@@ -28,7 +28,7 @@ def enumPlugins(filter_start=''):
 				if line.startswith('Version:'):
 					version = line[8:].strip()
 				elif line.startswith('Description:'):
-					description = line[14:-1]
+					description = line[13:-1]
 				elif description and line.startswith(' '):
 					description += line[:-1]
 				elif len(line) <= 1:

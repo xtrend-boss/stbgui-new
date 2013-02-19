@@ -116,6 +116,17 @@ def InitUsageConfig():
 		("shutdown", _("Immediate shutdown")),
 		("standby", _("Standby")) ] )
 
+	choicelist = [("0", "Disabled")]
+	for i in range(3600, 25200, 3600):
+		h = i / 3600
+		choicelist.append(("%d" % i, ngettext("%d hour", "%d hours", h) % h))
+	config.usage.inactivity_timer = ConfigSelection(default = "0", choices = choicelist)
+
+	config.usage.inactivity_action = ConfigSelection(default = "standby", choices = [
+		("shutdown", _("Immediate shutdown")),
+		("standby", _("Standby")) ] )
+
+	config.usage.check_timeshift = ConfigYesNo(default = True)
 
 	config.usage.alternatives_priority = ConfigSelection(default = "0", choices = [
 		("0", "DVB-S/-C/-T"),

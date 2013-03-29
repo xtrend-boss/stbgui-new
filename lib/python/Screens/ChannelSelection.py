@@ -884,23 +884,41 @@ class ChannelSelectionBase(Screen):
 		self.mode = MODE_TV
 		self.servicePath = self.servicePathTV
 		self.recallBouquetMode()
-		title = self.maintitle
-		pos = title.find(" (")
-		if pos != -1:
-			title = title[:pos]
-		title += _(" (TV)")
-		self.setTitle(title)
+		titlesearch = self.getTitle() 
+                if titlesearch == "Channel selection": 
+                        title = self.maintitle  
+                        pos = title.find(" (")
+                        if pos != -1:
+			        title = title[:pos]
+		        title += _(" (TV)")
+                        self.setTitle(title)
+                else:
+		        title = self.getTitle()
+		        pos = title.find(" (")
+		        if pos != -1:
+			        title = title[:pos]
+                        title += _(" (TV)")
+                        self.setTitle(title)
 
 	def setRadioMode(self):
 		self.mode = MODE_RADIO
 		self.servicePath = self.servicePathRadio
 		self.recallBouquetMode()
-		title = self.maintitle
-		pos = title.find(" (")
-		if pos != -1:
-			title = title[:pos]
-		title += _(" (Radio)")
-		self.setTitle(title)
+                titlesearch = self.getTitle() 
+                if titlesearch == "Channel selection": 
+                        title = self.maintitle  
+                        pos = title.find(" (")
+                        if pos != -1:
+			        title = title[:pos]
+		        title += _(" (Radio)")
+                        self.setTitle(title)
+                else:
+		        title = self.getTitle()
+		        pos = title.find(" (")
+		        if pos != -1:
+			        title = title[:pos]
+                        title += _(" (Radio)")
+                        self.setTitle(title)
 
 	def setRoot(self, root, justSet=False):
 		if self.startRoot is None:
@@ -959,8 +977,6 @@ class ChannelSelectionBase(Screen):
 				if end_ref is not None:
 					if Len > 2:
 						titleStr += '/../'
-					else:
-						titleStr += '/'
 					nameStr = self.getServiceName(end_ref)
 					titleStr += nameStr
 				self.setTitle(titleStr)

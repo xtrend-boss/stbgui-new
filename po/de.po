@@ -451,6 +451,47 @@ msgstr ""
 "Ein Ausschalt-Timer möchte Ihren Receiver\n"
 "ausschalten. Jetzt herunterfahren?"
 
+msgid ""
+"Do you want this?"
+msgstr ""
+"Dies jetzt tun?"
+
+msgid ""
+"Your receiver will got to stand by due to the sleeptimer."
+msgstr ""
+"Ein Ausschalt-Timer möchte Ihren Receiver in\n"
+"den Standby-Modus schalten."
+
+msgid ""
+"Your receiver will shutdown due to the sleeptimer."
+msgstr ""
+"Ein Ausschalt-Timer möchte Ihren Receiver\n"
+"ausschalten."
+
+msgid ""
+"Extend sleeptimer 15 minutes"
+msgstr ""
+"weitere 15 Minuten warten.."
+
+msgid ""
+"And will shutdown your receiver over "
+msgstr ""
+"Receiver wird ausgeschalten in "
+
+msgid ""
+"And will put your receiver in standby over "
+msgstr ""
+"Receiver wird in den Standby-Modus geschalten in "
+
+msgid "SleepTimer Configuration"
+msgstr "Ausschalt-Timer Einstellungen"
+
+msgid "Sleeptimer"
+msgstr "Ausschalt-Timer"
+
+msgid "Action when receiver is not controlled"
+msgstr "Aktion bei Nichtbedienung des Receiver"
+
 msgid "A small overview of the available icon states and actions."
 msgstr "Eine kurze Übersicht der verfügbaren Symbol Stati und Aktionen."
 

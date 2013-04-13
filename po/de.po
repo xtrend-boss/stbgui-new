@@ -3038,6 +3038,12 @@ msgstr "N/V"
 msgid "NEXT"
 msgstr "DANACH"
 
+msgid "Now"
+msgstr "Jetzt"
+
+msgid "Next up"
+msgstr "Es folgt"
+
 msgid "NFI image flashing"
 msgstr "NFI Image Flashing"
 

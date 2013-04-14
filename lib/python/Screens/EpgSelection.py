@@ -69,6 +69,9 @@ class EPGSelection(Screen):
 			self["next_text"] = Label()
 			self["more_text"] = Label()
 			self["date"] = Label()
+			self["now"] = Label()
+			self["next"] = Label()
+			self["more"] = Label()
 			self.services = service
 			self.zapFunc = zapFunc
 
@@ -292,28 +295,37 @@ class EPGSelection(Screen):
 			self["now_text"].hide()
 			self["next_text"].hide()
 			self["more_text"].hide()
+			self["now"].hide()
+			self["next"].hide()
+			self["more"].hide()
 			self["key_red"].setText("")
 		else:
 			if state == 1:
 				self["now_button_sel"].show()
 				self["now_button"].hide()
+				self["now"].show()
 			else:
 				self["now_button"].show()
 				self["now_button_sel"].hide()
+				self["now"].hide()
 
 			if state == 2:
 				self["next_button_sel"].show()
 				self["next_button"].hide()
+				self["next"].show()
 			else:
 				self["next_button"].show()
 				self["next_button_sel"].hide()
+				self["next"].hide()
 
 			if state == 3:
 				self["more_button_sel"].show()
 				self["more_button"].hide()
+				self["more"].show()
 			else:
 				self["more_button"].show()
 				self["more_button_sel"].hide()
+				self["more"].hide()
 
 	def onSelectionChanged(self):
 		cur = self["list"].getCurrent()

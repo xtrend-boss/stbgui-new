@@ -563,7 +563,7 @@ static int reindex_work(const std::string& filename)
 			return err;
 		}
 		eDebug("reindex: pcr_pid=0x%x", pcr_pid);
-		parser.setPid(pcr_pid, -1); /* -1 = automatic MPEG2/h264 detection */
+		parser.setPid(pcr_pid, iDVBTSRecorder::video_pid, -1); /* -1 = automatic MPEG2/h264 detection */
 	}
 
 	parser.startSave(filename);
@@ -2496,7 +2496,8 @@ void eDVBServicePlay::updateTimeshiftPids()
 	else
 	{
 		int timing_pid = -1;
-		int timing_pid_type = -1;
+		int timing_stream_type = -1;
+		iDVBTSRecorder::timing_pid_type timing_pid_type = iDVBTSRecorder::none;
 		std::set<int> pids_to_record;
 		pids_to_record.insert(0); // PAT
 		if (program.pmtPid != -1)
@@ -2512,7 +2513,8 @@ void eDVBServicePlay::updateTimeshiftPids()
 			if (timing_pid == -1)
 			{
 				timing_pid = i->pid;
-				timing_pid_type = i->type;
+				timing_stream_type = i->type;
+				timing_pid_type = iDVBTSRecorder::video_pid;
 			}
 			pids_to_record.insert(i->pid);
 		}
@@ -2524,7 +2526,8 @@ void eDVBServicePlay::updateTimeshiftPids()
 			if (timing_pid == -1)
 			{
 				timing_pid = i->pid;
-				timing_pid_type = -1;
+				timing_stream_type = i->type;
+				timing_pid_type = iDVBTSRecorder::audio_pid;
 			}
 			pids_to_record.insert(i->pid);
 		}
@@ -2553,7 +2556,7 @@ void eDVBServicePlay::updateTimeshiftPids()
 			m_record->removePID(*i);
 
 		if (timing_pid != -1)
-			m_record->setTimingPID(timing_pid, timing_pid_type);
+			m_record->setTimingPID(timing_pid, timing_pid_type, timing_stream_type);
 	}
 }
 
@@ -2607,7 +2610,14 @@ void eDVBServicePlay::resetTimeshift(int start)
 
 ePtr<iTsSource> eDVBServicePlay::createTsSource(eServiceReferenceDVB &ref, int packetsize)
 {
-	if (m_is_stream)
+	/*
+	 * NOTE: we cannot use our m_is_stream status, instead we check the reference again.
+	 * It could be that createTsSource is called to start a timeshift on a stream,
+	 * in which case the ref passed here no longer is a url, but a timeshift file instead.
+	 * (but m_is_stream would still be set, because of the ref which was passed to our
+	 * constructor)
+	 */
+	if (ref.path.substr(0, 7) == "http://")
 	{
 		eHttpStream *f = new eHttpStream();
 		f->open(ref.path.c_str());

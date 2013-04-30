@@ -1455,14 +1455,10 @@ class InfoBarTimeshift:
 				"timeshiftActivateEndAndPause": self.activateTimeshiftEndAndPause  # something like "pause key"
 			}, prio=-1) # priority over record
 
-		self.save_timeshift_file = False
-		self.save_timeshift_in_movie_dir = False
-		self.current_timeshift_filename = ""
-		self.new_timeshift_filename = ""
-
 		self["TimeshiftActivateActions"].setEnabled(False)
 		self.ts_rewind_timer = eTimer()
 		self.ts_rewind_timer.callback.append(self.rewindService)
+		self.save_timeshift_file = False
 
 		self.__event_tracker = ServiceEventTracker(screen=self, eventmap=
 			{
@@ -1503,6 +1499,8 @@ class InfoBarTimeshift:
 				self.__seekableStatusChanged()
 
 				# get current timeshift filename and calculate new
+				self.save_timeshift_file = False
+				self.save_timeshift_in_movie_dir = False
 				self.current_timeshift_filename = ts.getTimeshiftFilename()
 				self.new_timeshift_filename = self.generateNewTimeshiftFileName()
 			else:
@@ -1511,15 +1509,14 @@ class InfoBarTimeshift:
 	def stopTimeshift(self):
 		ts = self.getTimeshift()
 		if ts and ts.isTimeshiftEnabled():
-			self.checkTimeshiftRunning(boundFunction(self.stopTimeshiftcheckTimeshiftRunningCallback, ts))
+			self.checkTimeshiftRunning(self.stopTimeshiftcheckTimeshiftRunningCallback)
 		else:
 			return 0
 
-	def stopTimeshiftcheckTimeshiftRunningCallback(self, ts, answer):
-		if answer:
-			self.saveTimeshiftFiles()
+	def stopTimeshiftcheckTimeshiftRunningCallback(self, answer):
+		ts = self.getTimeshift()
+		if answer and ts:
 			ts.stopTimeshift()
-			self.save_timeshift_file = False
 			self.pvrStateDialog.hide()
 
 			# disable actions
@@ -1592,25 +1589,41 @@ class InfoBarTimeshift:
 
 	def __serviceStarted(self):
 		self.pvrStateDialog.hide()
-		self.save_timeshift_file = False
-		self.save_timeshift_in_movie_dir = False
-		self.current_timeshift_filename = ""
-		self.new_timeshift_filename = ""
 		self.__seekableStatusChanged()
 
 	def checkTimeshiftRunning(self, returnFunction):
 		if self.timeshiftEnabled() and config.usage.check_timeshift.value:
-			self.session.openWithCallback(returnFunction, MessageBox, _("Stop timeshift?"), simple = True)
+			message = _("Stop timeshift?")
+			if not self.save_timeshift_file:
+				choice = [(_("yes"), "stop"), (_("no"), "continue"), (_("Yes and save"), "save"), (_("Yes and save in movie dir"), "save_movie")]
+			else:
+				choice = [(_("yes"), "stop"), (_("no"), "continue")]
+				message += "\n" + _("Reminder, you have chosen to save timeshift file.")
+			self.session.openWithCallback(boundFunction(self.checkTimeshiftRunningCallback, returnFunction), MessageBox, message, simple = True, list = choice)
 		else:
 			returnFunction(True)
+
+	def checkTimeshiftRunningCallback(self, returnFunction, answer):
+		if answer:
+			if "movie" in answer:
+				self.save_timeshift_in_movie_dir = True
+			if "save" in answer:
+				self.save_timeshift_file = True
+				ts = self.getTimeshift()
+				if ts:
+					ts.saveTimeshiftFile()
+					del ts
+			if "continue" not in answer:
+				self.saveTimeshiftFiles()
+		returnFunction(answer and answer != "continue")
 
 	# renames/moves timeshift files if requested
 	def __serviceEnd(self):
 		self.saveTimeshiftFiles()
 
 	def saveTimeshiftFiles(self):
-		if self.timeshiftEnabled() and self.save_timeshift_file and self.current_timeshift_filename != "" and self.new_timeshift_filename != "":
-			if config.usage.timeshift_path.value is not None and not self.save_timeshift_in_movie_dir:
+		if self.save_timeshift_file and self.current_timeshift_filename and self.new_timeshift_filename:
+			if config.usage.timeshift_path.value and not self.save_timeshift_in_movie_dir:
 				dirname = config.usage.timeshift_path.value
 			else:
 				dirname = defaultMoviePath()
@@ -1624,7 +1637,7 @@ class InfoBarTimeshift:
 				fileList.append((self.current_timeshift_filename + ".cuts", filename + ".cuts"))
 
 			moveFiles(fileList)
-
+			self.save_timeshift_file = False
 
 from Screens.PiPSetup import PiPSetup
 
@@ -1961,6 +1974,9 @@ class InfoBarInstantRecord:
 				self.setEndtime(0)
 			else:
 				self.session.openWithCallback(self.setEndtime, TimerSelection, list)
+		elif answer[1] == "timer":
+			import TimerEdit
+			self.session.open(TimerEdit.TimerEditList)
 		elif answer[1] == "stop":
 			self.session.openWithCallback(self.stopCurrentRecording, TimerSelection, list)
 		elif answer[1] in ( "indefinitely" , "manualduration", "manualendtime", "event"):
@@ -1969,12 +1985,12 @@ class InfoBarInstantRecord:
 				self.changeDuration(len(self.recording)-1)
 			elif answer[1] == "manualendtime":
 				self.setEndtime(len(self.recording)-1)
-		elif answer[1] in ("timeshift", "timeshift_movie"):
+		elif "timeshift" in answer[1]:
 			ts = self.getTimeshift()
-			if ts is not None:
+			if ts:
 				ts.saveTimeshiftFile()
 				self.save_timeshift_file = True
-				if answer[1] == "timeshift_movie":
+				if "movie" in answer[1]:
 					self.save_timeshift_in_movie_dir = True
 		print "after:\n", self.recording
 
@@ -2008,6 +2024,17 @@ class InfoBarInstantRecord:
 			entry.end = int(time()) + 60 * int(value)
 			self.session.nav.RecordTimer.timeChanged(entry)
 
+	def isTimerRecordRunning(self):
+		identical = timers = 0
+		for timer in self.session.nav.RecordTimer.timer_list:
+			if timer.isRunning() and not timer.justplay:
+				timers += 1
+				if self.recording:
+					for x in self.recording:
+						if x.isRunning() and x == timer:
+							identical += 1
+		return timers > identical
+
 	def instantRecord(self):
 		pirr = preferredInstantRecordPath()
 		if not findSafeRecordPath(pirr) and not findSafeRecordPath(defaultMoviePath()):
@@ -2025,11 +2052,16 @@ class InfoBarInstantRecord:
 			title =_("A recording is currently running.\nWhat do you want to do?")
 			list = ((_("Stop recording"), "stop"),) + common + \
 			((_("Change recording (duration)"), "changeduration"),
-			(_("Change recording (endtime)"), "changeendtime"),
-			(_("Do nothing"), "no"),)
+			(_("Change recording (endtime)"), "changeendtime"),)
+			if self.isTimerRecordRunning():
+				list += ((_("Stop timer recording"), "timer"),)
+			list += ((_("Do nothing"), "no"),)
 		else:
 			title=_("Start recording?")
-			list = common + ((_("Do not record"), "no"),)
+			list = common
+			if self.isTimerRecordRunning():
+				list += ((_("Stop timer recording"), "timer"),)
+			list += ((_("Do not record"), "no"),)
 		if self.timeshiftEnabled():
 			list = list + ((_("Save timeshift file"), "timeshift"),
 			(_("Save timeshift file in movie directory"), "timeshift_movie"))

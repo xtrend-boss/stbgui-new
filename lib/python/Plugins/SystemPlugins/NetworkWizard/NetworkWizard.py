@@ -76,6 +76,7 @@ class NetworkWizard(WizardLanguage, Rc):
 		self.stopScan()
 		del self.rescanTimer
 		self.checkOldInterfaceState()
+		self.exit()
 		pass
 
 	def back(self):

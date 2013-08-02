@@ -9,7 +9,7 @@ from Tools.LoadPixmap import LoadPixmap
 from timer import TimerEntry
 from Tools.Directories import resolveFilename, SCOPE_CURRENT_SKIN, SCOPE_SKIN_IMAGE
 
-class XTATimerList(HTMLComponent, GUIComponent, object):
+class TimerList(HTMLComponent, GUIComponent, object):
 #
 #  | <Service>     <Name of the Timer>  |
 #  | <start, end>              <state>  |

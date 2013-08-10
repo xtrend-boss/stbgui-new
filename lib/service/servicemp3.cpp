@@ -19,7 +19,7 @@
 #include <gst/pbutils/missing-plugins.h>
 #include <sys/stat.h>
 
-#define HTTP_TIMEOUT 10
+#define HTTP_TIMEOUT 30
 
 typedef enum
 {
@@ -1875,6 +1875,7 @@ void eServiceMP3::playbinNotifySource(GObject *object, GParamSpec *unused, gpoin
 				{
 					GValue header;
 					eDebug("setting extra-header '%s:%s'", name.c_str(), value.c_str());
+					memset(&header, 0, sizeof(GValue));
 					g_value_init(&header, G_TYPE_STRING);
 					g_value_set_string(&header, value.c_str());
 					gst_structure_set_value(extras, name.c_str(), &header);

@@ -32,6 +32,7 @@ from Screens.RdsDisplay import RdsInfoDisplay, RassInteractive
 from Screens.TimeDateInput import TimeDateInput
 from Screens.UnhandledKey import UnhandledKey
 from ServiceReference import ServiceReference, isPlayableForCur
+from Tools.Directories import fileExists, pathExists
 
 from Tools import Notifications, ASCIItranslit
 from Tools.Directories import fileExists, getRecordingFilename, moveFiles
@@ -2200,7 +2201,9 @@ class InfoBarSubserviceSelection:
 	def GreenPressed(self):
 		service = self.session.nav.getCurrentService()
 		subservices = service and service.subServices()
-		if not subservices or subservices.getNumberOfSubservices() == 0:
+		if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/CustomSubservicesPlugin/plugin.pyo'):
+                        self.subserviceSelection()
+                elif not subservices or subservices.getNumberOfSubservices() == 0:
 			try:
 				from Screens.PluginBrowser import PluginBrowser
 				self.session.open(PluginBrowser)

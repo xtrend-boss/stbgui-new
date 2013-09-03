@@ -2200,7 +2200,7 @@ class InfoBarSubserviceSelection:
 	def GreenPressed(self):
 		service = self.session.nav.getCurrentService()
 		subservices = service and service.subServices()
-		if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/CustomSubservicesPlugin/plugin.pyo'):
+		if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/CustomSubservices/plugin.pyo'):
                         self.subserviceSelection()
                 elif not subservices or subservices.getNumberOfSubservices() == 0:
 			try:

@@ -204,7 +204,7 @@ class InfoBarScreenSaver:
 			eActionMap.getInstance().bindAction('', -maxint - 1, self.keypressScreenSaver)
 
 	def keypressScreenSaver(self, key, flag):
-		if flag == 1:
+		if flag:
 			self.screensaver.hide()
 			self.show()
 			self.ScreenSaverTimerStart()
@@ -2455,7 +2455,7 @@ class InfoBarNotifications:
 			eActionMap.getInstance().unbindAction('', self.keypressNotification)
 
 	def keypressNotification(self, key, flag):
-		if flag == 1:
+		if flag:
 			self.closeNotificationInstantiateDialog()
 
 	def __notificationClosed(self, d):
@@ -2753,7 +2753,7 @@ class InfoBarTeletextPlugin:
 			print "no teletext plugin found!"
 
 	def startTeletext(self):
-		self.teletext_plugin(session=self.session, service=self.session.nav.getCurrentService())
+		self.teletext_plugin(session=self.session, infobar=self, service=self.session.nav.getCurrentService())
 
 class InfoBarSubtitleSupport(object):
 	def __init__(self):
@@ -2873,7 +2873,7 @@ class InfoBarPowersaver:
 		eActionMap.getInstance().bindAction('', -maxint - 1, self.keypress)
 
 	def keypress(self, key, flag):
-		if flag == 1:
+		if flag:
 			self.restartInactiveTimer()
 
 	def restartInactiveTimer(self):
@@ -2886,7 +2886,7 @@ class InfoBarPowersaver:
 	def inactivityTimeout(self):
 		if config.usage.inactivity_timer_blocktime.value:
 			curtime = localtime(time())
-			if curtime.tm_year != "1970": #check if the current time is valid
+			if curtime.tm_year != 1970: #check if the current time is valid
 				curtime = (curtime.tm_hour, curtime.tm_min, curtime.tm_sec)
 				begintime = tuple(config.usage.inactivity_timer_blocktime_begin.value)
 				endtime = tuple(config.usage.inactivity_timer_blocktime_end.value)
@@ -2958,7 +2958,7 @@ class InfoBarPowersaver:
 		if value < 0:
 			if Screens.Standby.inStandby:
 				print "[InfoBarPowersaver] already in standby now shut down"
-				RecordTimerEntry.TryQuitMainloop(True)
+				RecordTimerEntry.TryQuitMainloop()
 			elif not Screens.Standby.inTryQuitMainloop:
 				print "[InfoBarPowersaver] goto shutdown"
 				self.session.open(Screens.Standby.TryQuitMainloop, 1)

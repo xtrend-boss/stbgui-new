@@ -1,17 +1,19 @@
-from enigma import eServiceCenter, eServiceReference, eTimer, pNavigation, getBestPlayableServiceReference, iPlayableService
+from enigma import eServiceCenter, eServiceReference, eTimer, pNavigation, getBestPlayableServiceReference, iPlayableService, eActionMap
 from Components.ParentalControl import parentalControl
 from Tools.BoundFunction import boundFunction
 from Tools.StbHardware import setFPWakeuptime, getFPWakeuptime, getFPWasTimerWakeup
-from time import time
+from Tools import Notifications
+from time import time, localtime
 import RecordTimer
 import Screens.Standby
 import NavigationInstance
 import ServiceReference
 from Screens.InfoBar import InfoBar
+from sys import maxint
 
 # TODO: remove pNavgation, eNavigation and rewrite this stuff in python.
 class Navigation:
-	def __init__(self, nextRecordTimerAfterEventActionAuto=False):
+	def __init__(self):
 		if NavigationInstance.instance is not None:
 			raise NavigationInstance.instance
 
@@ -30,24 +32,29 @@ class Navigation:
 		self.currentlyPlayingServiceOrGroup = None
 		self.currentlyPlayingService = None
 		self.RecordTimer = RecordTimer.RecordTimer()
-		self.__wasTimerWakeup = False
-		if getFPWasTimerWakeup():
-			self.__wasTimerWakeup = True
-			if nextRecordTimerAfterEventActionAuto:
-				# We need to give the systemclock the chance to sync with the transponder time,
-				# before we will make the decision about whether or not we need to shutdown
-				# after the upcoming recording has completed
-				self.recordshutdowntimer = eTimer()
-				self.recordshutdowntimer.callback.append(self.checkShutdownAfterRecording)
-				self.recordshutdowntimer.start(30000, True)
+		self.__wasTimerWakeup = getFPWasTimerWakeup()
+		if self.__wasTimerWakeup:
+			# We need to give the systemclock the chance to sync with the transponder time
+			self.recordshutdowntimer = eTimer()
+			self.recordshutdowntimer.callback.append(self.checkShutdownAfterRecording)
+			self.recordshutdowntimer.startLongTimer(30)
+			eActionMap.getInstance().bindAction('', -maxint - 1, self.keypress)
+
+	def checkShutdownAfterRecording(self):
+		if len(self.getRecordings()) or abs(self.RecordTimer.getNextTimerTime() - time()) <= 360:
+			if Screens.Standby.inStandby: #In case some plugin did put the receiver already in standby
+				config.misc.standbyCounter.value = 0
+			else:
+				Notifications.AddNotification(Screens.Standby.Standby, StandbyCounterIncrease=False)
+			self.keypress() #this ensures to unbind the keypress detection	
+
+	def keypress(self, key=None, flag=1):
+		if flag:
+			eActionMap.getInstance().unbindAction('', self.keypress)
+			self.recordshutdowntimer.stop()
 
 	def wasTimerWakeup(self):
 		return self.__wasTimerWakeup
-
-	def checkShutdownAfterRecording(self):
-		if len(self.getRecordings()) or abs(self.RecordTimer.getNextRecordingTime() - time()) <= 360:
-			if not Screens.Standby.inTryQuitMainloop: # not a shutdown messagebox is open
-				RecordTimer.RecordTimerEntry.TryQuitMainloop(False) # start shutdown handling
 
 	def dispatchEvent(self, i):
 		for x in self.event:

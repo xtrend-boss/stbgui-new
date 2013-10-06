@@ -92,7 +92,8 @@ class VideoFinetune(Screen):
 		self.next = self.testpic_contrast
 		c = self["Canvas"]
 
-		xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		#xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		xres, yres = 720, 576
 
 		bbw, bbh = xres / 192, yres / 192
 		c.fill(0, 0, xres, yres, RGB(0,0,0))
@@ -129,7 +130,8 @@ class VideoFinetune(Screen):
 
 		c = self["Canvas"]
 
-		xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		#xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		xres, yres = 720, 576
 
 		bbw, bbh = xres / 192, yres / 192
 		c.fill(0, 0, xres, yres, RGB(0,0,0))
@@ -167,7 +169,8 @@ class VideoFinetune(Screen):
 
 		c = self["Canvas"]
 
-		xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		#xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		xres, yres = 720, 576
 
 		bbw = xres / 192
 		bbh = yres / 192
@@ -224,7 +227,8 @@ class VideoFinetune(Screen):
 
 		c = self["Canvas"]
 
-		xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		#xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		xres, yres = 720, 576
 
 		c.fill(0, 0, xres, yres, RGB(64, 64, 64))
 
@@ -256,7 +260,8 @@ class VideoFinetune(Screen):
 
 		c = self["Canvas"]
 
-		xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		#xres, yres = getDesktop(0).size().width(), getDesktop(0).size().height()
+		xres, yres = 720, 576
 
 		c.fill(0, 0, xres, yres, RGB(0, 0, 0))
 

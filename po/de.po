@@ -741,12 +741,6 @@ msgstr ""
 msgid "An unknown error occurred!"
 msgstr "Es ist ein unbekannter Fehler aufgetreten!"
 
-msgid "And will put your receiver in standby over "
-msgstr "Receiver in den Standby versetzen nach "
-
-msgid "And will shutdown your receiver over "
-msgstr "Receiver ausschalten nach "
-
 msgid "Any activity"
 msgstr "Irgendeine Aktivität"
 
@@ -2039,9 +2033,6 @@ msgstr "Wollen Sie das Verzeichnis %s wirklich von der Festplatte löschen?"
 msgid "Do you really want to remove your bookmark of %s?"
 msgstr "Wollen Sie das Lesezeichen %s wirklich löschen?"
 
-msgid "Do you want this?"
-msgstr "Wollen Sie dieses wirklich?"
-
 msgid "Do you want to burn this collection to DVD medium?"
 msgstr "Soll diese Zusammenstellung auf DVD gebrannt werden?"
 
@@ -2353,9 +2344,6 @@ msgstr "Assistent beenden"
 
 msgid "Expert"
 msgstr "Experte"
-
-msgid "Extend sleeptimer 15 minutes"
-msgstr "Sleeptimer 15 min verlängern"
 
 msgid "Extended Software"
 msgstr "Fortgeschrittene Software"
@@ -5186,12 +5174,6 @@ msgstr ""
 msgid "Sleep timer"
 msgstr "Ausschalt-Timer"
 
-msgid "SleepTimer Configuration"
-msgstr "Sleeptimer Einstellungen"
-
-msgid "Sleeptimer"
-msgstr "Sleeptimer"
-
 msgid "Slide picture in loop"
 msgstr "Bilder als Slideshow anzeigen (Schleife)"
 
@@ -7142,9 +7124,6 @@ msgstr ""
 "Ihr Receiver könnte jetzt unbenutzbar sein. Bitte konsultieren Sie das "
 "Handbuch, bevor Sie Ihren Receiver neustarten."
 
-msgid "Your receiver will got to stand by due to the sleeptimer."
-msgstr "Der Receiver geht jetzt gemäß des Sleeptimers in den Standby."
-
 msgid "Your receiver will got to standby due to inactivity."
 msgstr "Der Receiver geht jetzt wegen Inaktivität in den Standby."
 
@@ -7153,9 +7132,6 @@ msgstr "Ihr Receiver startet neu nach Betätigung der OK-Taste."
 
 msgid "Your receiver will shutdown due to inactivity."
 msgstr "Ihr Receiver wird wegen Inaktivität ausgeschaltet."
-
-msgid "Your receiver will shutdown due to the sleeptimer."
-msgstr "Ihr Receiver schaltet sich nun gemäß des Sleeptimers aus."
 
 msgid ""
 "Your wireless LAN internet connection could not be started!\n"

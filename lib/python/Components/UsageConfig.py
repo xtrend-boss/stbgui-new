@@ -30,6 +30,11 @@ def InitUsageConfig():
 
 	config.usage.service_icon_enable = ConfigYesNo(default = False)
 	config.usage.service_icon_enable.addNotifier(refreshServiceList)
+	config.usage.servicelist_cursor_behavior = ConfigSelection(default = "standard", choices = [
+		("standard", _("Standard")),
+		("keep", _("Keep service")),
+		("reverseB", _("Reverse bouquet buttons")),
+		("keep reverseB", _("Keep service") + " + " + _("Reverse bouquet buttons"))])
 
 	config.usage.multiepg_ask_bouquet = ConfigYesNo(default = False)
 	

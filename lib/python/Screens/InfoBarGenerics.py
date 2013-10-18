@@ -556,11 +556,13 @@ class InfoBarChannelSelection:
 			self.servicelist.historyNext()
 
 	def switchChannelUp(self):
-		self.servicelist.moveUp()
+		if "keep" not in config.usage.servicelist_cursor_behavior.value:
+			self.servicelist.moveUp()
 		self.session.execDialog(self.servicelist)
 
 	def switchChannelDown(self):
-		self.servicelist.moveDown()
+		if "keep" not in config.usage.servicelist_cursor_behavior.value:
+			self.servicelist.moveDown()
 		self.session.execDialog(self.servicelist)
 
 	def openServiceList(self):

@@ -68,8 +68,8 @@ class FlashOnline(Screen):
 		self["key_green"] = Button("Online")
 		self["key_red"] = Button(_("Exit"))
 		self["key_blue"] = Button("")
-		self["info-local"] = Label(_("Local = Flash a image from local path /hdd/images"))
-		self["info-online"] = Label(_("Online = Download a image and flash it"))
+		self["info-local"] = Label(_("Local = Flash an image from local path /hdd/images"))
+		self["info-online"] = Label(_("Online = Download an image and flash it"))
 		
 		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], 
 		{

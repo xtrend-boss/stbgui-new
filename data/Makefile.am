@@ -1,4 +1,4 @@
-SUBDIRS = fonts extensions keymaps skin_default
+SUBDIRS = fonts extensions keymaps skin_default hw_info
 
 dist_pkgdata_DATA = \
 	encoding.conf \
@@ -7,7 +7,9 @@ dist_pkgdata_DATA = \
 	black.mvi \
 	rcpositions.xml \
 	setup.xml \
+	skin_default.xml \
 	skin_subtitles.xml \
+	skin.xml \
 	startwizard.xml \
 	freesat.t1 \
 	freesat.t2 \

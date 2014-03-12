@@ -227,6 +227,7 @@ data/Makefile
 data/fonts/Makefile
 data/extensions/Makefile
 data/keymaps/Makefile
+data/hw_info/Makefile
 data/displaytext/Makefile
 data/display96/Makefile
 data/display128/Makefile

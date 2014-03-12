@@ -4,7 +4,8 @@
 #					MAKES A FULLBACK-UP READY FOR FLASHING.						#
 #																				#
 #################################################################################
-from enigma import getBoxType, getMachineBrand, getMachineName, getImageVersionString, getBuildVersionString, getDriverDateString, getEnigmaVersionString
+from enigma import getEnigmaVersionString
+from boxbranding import getBoxType, getMachineBrand, getMachineName, getDriverDate, getImageVersion, getImageBuild, getBrandOEM, getMachineBuild, getImageFolder, getMachineUBINIZE, getMachineMKUBIFS, getMachineMtdKernel, getMachineKernelFile, getMachineRootFile, getImageFileSystem
 from Screens.Screen import Screen
 from Components.Button import Button
 from Components.Label import Label
@@ -743,10 +744,10 @@ class ImageBackup(Screen):
 		AboutText += _("Cores: %s") % about.getCpuCoresString() + "\n"
 
 		AboutText += _("Version: %s") % getImageVersionString() + "\n"
-		AboutText += _("Build: %s") % getBuildVersionString() + "\n"
+		AboutText += _("Build: %s") % getImageVersion() + "\n"
 		AboutText += _("Kernel: %s") % about.getKernelVersionString() + "\n"
 
-		string = getDriverDateString()
+		string = getDriverDate()
 		year = string[0:4]
 		month = string[4:6]
 		day = string[6:8]

@@ -6,6 +6,7 @@
 #include <lib/base/init.h>
 #include <lib/base/nconfig.h>
 #include <lib/base/object.h>
+#include <lib/dvb/epgcache.h>
 #include <lib/dvb/decoder.h>
 #include <lib/components/file_eraser.h>
 #include <lib/gui/esubtitle.h>
@@ -20,6 +21,22 @@
 #include <sys/stat.h>
 
 #define HTTP_TIMEOUT 30
+
+/*
+ * UNUSED variable from service reference is now used as buffer flag for gstreamer
+ * REFTYPE:FLAGS:STYPE:SID:TSID:ONID:NS:PARENT_SID:PARENT_TSID:UNUSED
+ *   D  D X X X X X X X X
+ * 4097:0:1:0:0:0:0:0:0:0:URL:NAME (no buffering)
+ * 4097:0:1:0:0:0:0:0:0:1:URL:NAME (buffering enabled)
+ * 4097:0:1:0:0:0:0:0:0:3:URL:NAME (progressive download and buffering enabled)
+ *
+ * Progressive download requires buffering enabled, so it's mandatory to use flag 3 not 2
+ */
+typedef enum
+{
+	BUFFERING_ENABLED	= 0x00000001,
+	PROGRESSIVE_DOWNLOAD	= 0x00000002
+} eServiceMP3Flags;
 
 typedef enum
 {
@@ -253,6 +270,19 @@ long long eStaticServiceMP3Info::getFileSize(const eServiceReference &ref)
 	return 0;
 }
 
+RESULT eStaticServiceMP3Info::getEvent(const eServiceReference &ref, ePtr<eServiceEvent> &evt, time_t start_time)
+{
+	if (ref.path.find("://") != std::string::npos)
+	{
+		eServiceReference equivalentref(ref);
+		equivalentref.type = eServiceFactoryMP3::id;
+		equivalentref.path.clear();
+		return eEPGCache::getInstance()->lookupEventTime(equivalentref, start_time, evt);
+	}
+	evt = 0;
+	return -1;
+}
+
 DEFINE_REF(eStreamBufferInfo)
 
 eStreamBufferInfo::eStreamBufferInfo(int percentage, int inputrate, int outputrate, int space, int size)
@@ -344,8 +374,10 @@ void eServiceMP3InfoContainer::setBuffer(GstBuffer *buffer)
 int eServiceMP3::ac3_delay = 0,
     eServiceMP3::pcm_delay = 0;
 
-eServiceMP3::eServiceMP3(eServiceReference ref)
-	:m_ref(ref), m_pump(eApp, 1)
+eServiceMP3::eServiceMP3(eServiceReference ref):
+	m_nownext_timer(eTimer::create(eApp)),
+	m_ref(ref),
+	m_pump(eApp, 1)
 {
 	m_subtitle_sync_timer = eTimer::create(eApp);
 	m_streamingsrc_timeout = 0;
@@ -368,6 +400,7 @@ eServiceMP3::eServiceMP3(eServiceReference ref)
 
 	CONNECT(m_subtitle_sync_timer->timeout, eServiceMP3::pushSubtitles);
 	CONNECT(m_pump.recv_msg, eServiceMP3::gstPoll);
+	CONNECT(m_nownext_timer->timeout, eServiceMP3::updateEpgCacheNowNext);
 	m_aspect = m_width = m_height = m_framerate = m_progressive = -1;
 
 	m_state = stIdle;
@@ -450,19 +483,18 @@ eServiceMP3::eServiceMP3(eServiceReference ref)
 		if (m_useragent.empty())
 			m_useragent = "Enigma2 Mediaplayer";
 		m_extra_headers = eConfigManager::getConfigValue("config.mediaplayer.extraHeaders");
-		if (strstr(filename, " buffer=1"))
+		if ( m_ref.getData(7) & BUFFERING_ENABLED )
 		{
 			m_use_prefillbuffer = true;
-		}
-		else if (strstr(filename, " buffer=2"))
-		{
-			/* progressive download buffering */
-			if (::access("/hdd/movie", X_OK) >= 0)
+			if ( m_ref.getData(7) & PROGRESSIVE_DOWNLOAD )
 			{
-				/* It looks like /hdd points to a valid mount, so we can store a download buffer on it */
-				m_download_buffer_path = "/hdd/gstreamer_XXXXXXXXXX";
+				/* progressive download buffering */
+				if (::access("/hdd/movie", X_OK) >= 0)
+				{
+					/* It looks like /hdd points to a valid mount, so we can store a download buffer on it */
+					m_download_buffer_path = "/hdd/gstreamer_XXXXXXXXXX";
+				}
 			}
-			m_use_prefillbuffer = true;
 		}
 	}
 	else if ( m_sourceinfo.containertype == ctCDA )
@@ -476,9 +508,10 @@ eServiceMP3::eServiceMP3(eServiceReference ref)
 		int fd = open(filename,O_RDONLY);
 		if (fd >= 0)
 		{
-			char tmp[128*1024];
+			char* tmp = new char[128*1024];
 			ret = read(fd, tmp, 128*1024);
 			close(fd);
+			delete [] tmp;
 		}
 		if ( ret == -1 ) // this is a "REAL" VCD
 			uri = g_strdup_printf ("vcd://");
@@ -610,6 +643,51 @@ eServiceMP3::~eServiceMP3()
 	}
 }
 
+void eServiceMP3::updateEpgCacheNowNext()
+{
+	bool update = false;
+	ePtr<eServiceEvent> next = 0;
+	ePtr<eServiceEvent> ptr = 0;
+	eServiceReference ref(m_ref);
+	ref.type = eServiceFactoryMP3::id;
+	ref.path.clear();
+	if (eEPGCache::getInstance() && eEPGCache::getInstance()->lookupEventTime(ref, -1, ptr) >= 0)
+	{
+		ePtr<eServiceEvent> current = m_event_now;
+		if (!current || !ptr || current->getEventId() != ptr->getEventId())
+		{
+			update = true;
+			m_event_now = ptr;
+			time_t next_time = ptr->getBeginTime() + ptr->getDuration();
+			if (eEPGCache::getInstance()->lookupEventTime(ref, next_time, ptr) >= 0)
+			{
+				next = ptr;
+				m_event_next = ptr;
+			}
+		}
+	}
+
+	int refreshtime = 60;
+	if (!next)
+	{
+		next = m_event_next;
+	}
+	if (next)
+	{
+		time_t now = eDVBLocalTimeHandler::getInstance()->nowTime();
+		refreshtime = (int)(next->getBeginTime() - now) + 3;
+		if (refreshtime <= 0 || refreshtime > 60)
+		{
+			refreshtime = 60;
+		}
+	}
+	m_nownext_timer->startLongTimer(refreshtime);
+	if (update)
+	{
+		m_event((iPlayableService*)this, evUpdatedEventInfo);
+	}
+}
+
 DEFINE_REF(eServiceMP3);
 
 DEFINE_REF(eServiceMP3::GstMessageContainer);
@@ -629,6 +707,7 @@ RESULT eServiceMP3::start()
 	{
 		eDebug("eServiceMP3::starting pipeline");
 		gst_element_set_state (m_gst_playbin, GST_STATE_PLAYING);
+		updateEpgCacheNowNext();
 	}
 
 	m_event(this, evStart);
@@ -652,6 +731,7 @@ RESULT eServiceMP3::stop()
 	eDebug("eServiceMP3::stop %s", m_ref.path.c_str());
 	gst_element_set_state(m_gst_playbin, GST_STATE_NULL);
 	m_state = stStopped;
+	m_nownext_timer->stop();
 
 	return 0;
 }
@@ -894,6 +974,14 @@ RESULT eServiceMP3::getName(std::string &name)
 	return 0;
 }
 
+RESULT eServiceMP3::getEvent(ePtr<eServiceEvent> &evt, int nownext)
+{
+	evt = nownext ? m_event_next : m_event_now;
+	if (!evt)
+		return -1;
+	return 0;
+}
+
 int eServiceMP3::getInfo(int w)
 {
 	const gchar *tag = 0;
@@ -996,6 +1084,24 @@ int eServiceMP3::getInfo(int w)
 
 std::string eServiceMP3::getInfoString(int w)
 {
+	if ( m_sourceinfo.is_streaming )
+	{
+		switch (w)
+		{
+		case sProvider:
+			return "IPTV";
+		case sServiceref:
+		{
+			eServiceReference ref(m_ref);
+			ref.type = eServiceFactoryMP3::id;
+			ref.path.clear();
+			return ref.toString();
+		}
+		default:
+			break;
+		}
+	}
+
 	if ( !m_stream_tags && w < sUser && w > 26 )
 		return "";
 	const gchar *tag = 0;
@@ -1855,7 +1961,11 @@ void eServiceMP3::playbinNotifySource(GObject *object, GParamSpec *unused, gpoin
 		}
 		if (g_object_class_find_property(G_OBJECT_GET_CLASS(source), "extra-headers") != 0 && !_this->m_extra_headers.empty())
 		{
+#if GST_VERSION_MAJOR < 1
 			GstStructure *extras = gst_structure_empty_new("extras");
+#else
+			GstStructure *extras = gst_structure_new_empty("extras");
+#endif
 			size_t pos = 0;
 			while (pos != std::string::npos)
 			{
@@ -1972,7 +2082,11 @@ audiotype_t eServiceMP3::gstCheckAudioPad(GstStructure* structure)
 		return atAC3;
 	else if ( gst_structure_has_name (structure, "audio/x-dts") || gst_structure_has_name (structure, "audio/dts") )
 		return atDTS;
+#if GST_VERSION_MAJOR < 1
 	else if ( gst_structure_has_name (structure, "audio/x-raw-int") )
+#else
+	else if ( gst_structure_has_name (structure, "audio/x-raw") )
+#endif
 		return atPCM;
 
 	return atUnknown;
@@ -2019,13 +2133,6 @@ void eServiceMP3::gstCBsubtitleAvail(GstElement *subsink, GstBuffer *buffer, gpo
 		if (buffer) gst_buffer_unref(buffer);
 		return;
 	}
-#if GST_VERSION_MAJOR < 1
-	guint8 *label = GST_BUFFER_DATA(buffer);
-#else
-	guint8 label[32] = {0};
-	gst_buffer_extract(buffer, 0, label, sizeof(label));
-#endif
-	eDebug("gstCBsubtitleAvail: %s", (const char*)label);
 	_this->m_pump.send(new GstMessageContainer(2, NULL, NULL, buffer));
 }
 
@@ -2093,8 +2200,6 @@ void eServiceMP3::gstTextpadHasCAPS_synced(GstPad *pad)
 
 void eServiceMP3::pullSubtitle(GstBuffer *buffer)
 {
-	uint32_t start_ms, end_ms;
-
 	if (buffer && m_currentSubtitleStream >= 0 && m_currentSubtitleStream < (int)m_subtitleStreams.size())
 	{
 		gint64 buf_pos = GST_BUFFER_TIMESTAMP(buffer);
@@ -2104,11 +2209,11 @@ void eServiceMP3::pullSubtitle(GstBuffer *buffer)
 #else
 		size_t len = gst_buffer_get_size(buffer);
 #endif
-		eDebug("pullSubtitle m_subtitleStreams[m_currentSubtitleStream].type=%i",m_subtitleStreams[m_currentSubtitleStream].type);
-
-		if ( m_subtitleStreams[m_currentSubtitleStream].type )
+		int subType = m_subtitleStreams[m_currentSubtitleStream].type;
+		eDebug("pullSubtitle type=%d size=%zu", subType, len);
+		if ( subType )
 		{
-			if ( m_subtitleStreams[m_currentSubtitleStream].type < stVOB )
+			if ( subType < stVOB )
 			{
 				int delay = eConfigManager::getConfigIntValue("config.subtitles.pango_subtitles_delay");
 				int subtitle_fps = eConfigManager::getConfigIntValue("config.subtitles.pango_subtitles_fps");
@@ -2117,18 +2222,17 @@ void eServiceMP3::pullSubtitle(GstBuffer *buffer)
 				if (subtitle_fps > 1 && m_framerate > 0)
 					convert_fps = subtitle_fps / (double)m_framerate;
 
-				unsigned char line[len+1];
 #if GST_VERSION_MAJOR < 1
-				memcpy(line, GST_BUFFER_DATA(buffer), len);
+				std::string line((const char*)GST_BUFFER_DATA(buffer), len);
 #else
-				gst_buffer_extract(buffer, 0, line, len);
+				std::string line(len);
+				gst_buffer_extract(buffer, 0, (char*)line.data(), len);
 #endif
-				line[len] = 0;
-				eDebug("got new text subtitle @ buf_pos = %lld ns (in pts=%lld), dur=%lld: '%s' ", buf_pos, buf_pos/11111, duration_ns, line);
+				eDebug("got new text subtitle @ buf_pos = %lld ns (in pts=%lld), dur=%lld: '%s' ", buf_pos, buf_pos/11111, duration_ns, line.c_str());
 
-				start_ms = ((buf_pos / 1000000ULL) * convert_fps) + delay;
-				end_ms = start_ms + (duration_ns / 1000000ULL);
-				m_subtitle_pages.insert(subtitle_pages_map_pair_t(end_ms, subtitle_page_t(start_ms, end_ms, (const char *)line)));
+				uint32_t start_ms = ((buf_pos / 1000000ULL) * convert_fps) + delay;
+				uint32_t end_ms = start_ms + (duration_ns / 1000000ULL);
+				m_subtitle_pages.insert(subtitle_pages_map_pair_t(end_ms, subtitle_page_t(start_ms, end_ms, line)));
 				m_subtitle_sync_timer->start(1, true);
 			}
 			else

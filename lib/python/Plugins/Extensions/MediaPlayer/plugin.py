@@ -254,7 +254,7 @@ class MediaPlayer(Screen, InfoBarBase, InfoBarScreenSaver, InfoBarSeek, InfoBarA
 	def hideAndInfoBar(self):
 		self.hide()
 		self.mediaPlayerInfoBar.show()
-		if self.ext not in AUDIO_EXTENSIONS and not self.isAudioCD:
+		if config.mediaplayer.alwaysHideInfoBar.value or self.ext not in AUDIO_EXTENSIONS and not self.isAudioCD:
 			self.hideMediaPlayerInfoBar.start(5000, True)
 
 	def timerHideMediaPlayerInfoBar(self):
@@ -567,9 +567,11 @@ class MediaPlayer(Screen, InfoBarBase, InfoBarScreenSaver, InfoBarSeek, InfoBarA
 			menu.append((_("Save playlist"), "saveplaylist"));
 			menu.append((_("Delete saved playlist"), "deleteplaylist"));
 			menu.append((_("Edit settings"), "settings"))
+		self.timerHideMediaPlayerInfoBar()
 		self.session.openWithCallback(self.menuCallback, ChoiceBox, title="", list=menu)
 
 	def menuCallback(self, choice):
+		self.show()
 		if choice is None:
 			return
 
@@ -1081,6 +1083,7 @@ def filescan(**kwargs):
 			paths_to_scan =
 				[
 					ScanPath(path = "", with_subdirs = False),
+					ScanPath(path = "PRIVATE/AVCHD/BDMV/STREAM", with_subdirs = False),
 				],
 			name = "Movie",
 			description = _("Watch movies..."),

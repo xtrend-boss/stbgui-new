@@ -47,7 +47,6 @@ config.movielist.play_audio_internal = ConfigYesNo(default=True)
 config.movielist.settings_per_directory = ConfigYesNo(default=True)
 config.movielist.root = ConfigSelection(default="/media", choices=["/","/media","/media/hdd","/media/hdd/movie"])
 config.movielist.hide_extensions = ConfigYesNo(default=False)
-config.movielist.hide_images = ConfigYesNo(default=True)
 
 userDefinedButtons = None
 last_selected_dest = []
@@ -242,7 +241,6 @@ class MovieBrowserConfiguration(ConfigListScreen,Screen):
 		configList = [
 			getConfigListEntry(_("Sort"), cfg.moviesort),
 			getConfigListEntry(_("Show extended description"), cfg.description),
-			getConfigListEntry(_("Show image items (.jpg, .gif, .bmp)"), config.movielist.hide_images),
 			getConfigListEntry(_("Type"), cfg.listtype),
 			getConfigListEntry(_("Use individual settings for each directory"), config.movielist.settings_per_directory),
 			getConfigListEntry(_("Behavior when a movie reaches the end"), config.usage.on_movie_eof),
@@ -298,7 +296,6 @@ class MovieBrowserConfiguration(ConfigListScreen,Screen):
 			config.movielist.listtype.save()
 			config.movielist.description.save()
 			config.usage.on_movie_eof.save()
-			config.movielist.hide_images.save()
 		self.close(True)
 
 	def cancel(self):
@@ -445,6 +442,7 @@ class MovieSelection(Screen, HelpableScreen, SelectionEventInfo, InfoBarBase):
 		else:
 			self.selected_tags = None
 		self.selected_tags_ele = None
+		self.nextInBackground = None
 
 		self.movemode = False
 		self.bouquet_mark_edit = False
@@ -475,6 +473,8 @@ class MovieSelection(Screen, HelpableScreen, SelectionEventInfo, InfoBarBase):
 		self.movieOff = self.settings["movieoff"]
 
 		self["list"] = MovieList(None, list_type=self.settings["listtype"], sort_type=self.settings["moviesort"], descr_state=self.settings["description"])
+
+		self.loadLocalSettings()
 
 		self.list = self["list"]
 		self.selectedmovie = selectedmovie
@@ -908,17 +908,18 @@ class MovieSelection(Screen, HelpableScreen, SelectionEventInfo, InfoBarBase):
 		self.session.nav.stopService()
 		self.list.playInBackground = None
 		if config.movielist.play_audio_internal.value:
-			if playInBackground == current:
-				self["list"].moveDown()
-				next = self.getCurrent()
-				if not next or (next == current):
-					print "End of list"
-					return # don't loop the last item
-				path = next.getPath()
-				ext = os.path.splitext(path)[1].lower()
-				print "Next up:", path
-				if ext in AUDIO_EXTENSIONS:
-					self.callLater(self.preview)
+			index = self.list.findService(playInBackground)
+			if index is None:
+				return # Not found?
+			next = self.list.getItem(index + 1)
+			if not next:
+				return
+			path = next.getPath()
+			ext = os.path.splitext(path)[1].lower()
+			print "Next up:", path
+			if ext in AUDIO_EXTENSIONS:
+				self.nextInBackground = next
+				self.callLater(self.preview)
 
 	def preview(self):
 		current = self.getCurrent()
@@ -929,19 +930,26 @@ class MovieSelection(Screen, HelpableScreen, SelectionEventInfo, InfoBarBase):
 			else:
 				Screens.InfoBar.InfoBar.instance.checkTimeshiftRunning(self.previewCheckTimeshiftCallback)
 
+	def startPreview(self):
+		if self.nextInBackground is not None:
+			current = self.nextInBackground
+			self.nextInBackground = None
+		else:
+			current = self.getCurrent()
+		playInBackground = self.list.playInBackground
+		if playInBackground:
+			self.list.playInBackground = None
+			self.session.nav.stopService()
+			if playInBackground != current:
+				# come back to play the new one
+				self.callLater(self.preview)
+		else:
+			self.list.playInBackground = current
+			self.session.nav.playService(current)
+
 	def previewCheckTimeshiftCallback(self, answer):
 		if answer:
-			current = self.getCurrent()
-			playInBackground = self.list.playInBackground
-			if playInBackground:
-				self.list.playInBackground = None
-				self.session.nav.stopService()
-				if playInBackground != current:
-					# come back to play the new one
-					self.callLater(self.preview)
-			else:
-				self.list.playInBackground = current
-				self.session.nav.playService(current)
+			self.startPreview()
 
 	def seekRelative(self, direction, amount):
 		if self.list.playInBackground:
@@ -1143,10 +1151,7 @@ class MovieSelection(Screen, HelpableScreen, SelectionEventInfo, InfoBarBase):
 	def setCurrentRef(self, path):
 		self.current_ref = eServiceReference("2:0:1:0:0:0:0:0:0:0:" + path)
 		# Magic: this sets extra things to show
-		if config.movielist.hide_images.value:
-			self.current_ref.setName('8192:jpg 8192:png 8192:gif 8192:bmp')
-		else:
-			self.current_ref.setName('8192:png')
+		self.current_ref.setName('16384:jpg 16384:png 16384:gif 16384:bmp')
 
 	def reloadList(self, sel = None, home = False):
 		self.reload_sel = sel
@@ -1279,7 +1284,10 @@ class MovieSelection(Screen, HelpableScreen, SelectionEventInfo, InfoBarBase):
 			d = os.path.normpath(p.mountpoint)
 			if d in inlist:
 				# improve shortcuts to mountpoints
-				bookmarks[bookmarks.index((d,d))] = (p.tabbedDescription(), d)
+				try:
+					bookmarks[bookmarks.index((d,d))] = (p.tabbedDescription(), d)
+				except:
+					pass # When already listed as some "friendly" name
 			else:
 				bookmarks.append((p.tabbedDescription(), d))
 			inlist.append(d)

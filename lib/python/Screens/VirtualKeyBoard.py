@@ -71,7 +71,7 @@ class VirtualKeyBoard(Screen):
 
 		self["country"] = StaticText("")
 		self["header"] = Label(title)
-		self["text"] = Input(currPos=len(kwargs.get("text", "")), allMarked=False, **kwargs)
+		self["text"] = Input(currPos=len(kwargs.get("text", "").decode("utf-8",'ignore')), allMarked=False, **kwargs)
 		self["list"] = VirtualKeyBoardList([])
 		
 		self["actions"] = NumberActionMap(["OkCancelActions", "WizardActions", "ColorActions", "KeyboardInputActions", "InputBoxActions", "InputAsciiActions"],
@@ -88,7 +88,7 @@ class VirtualKeyBoard(Screen):
 				"yellow": self.switchLang,
 				"blue": self.shiftClicked,
 				"deleteBackward": self.backClicked,
-				"deleteForward": self.backClicked,
+				"deleteForward": self.forwardClicked,
 				"back": self.exit,
 				"pageUp": self.cursorRight,
 				"pageDown": self.cursorLeft,
@@ -159,16 +159,16 @@ class VirtualKeyBoard(Screen):
 		elif self.lang == 'ru_RU':
 			self.keys_list = [
 				[u"EXIT", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9", u"0", u"BACKSPACE"],
-				[u"й", u"ц", u"у", u"к", u"е", u"н", u"г", u"ш", u"щ", u"з", u"х", u"+"],
-				[u"ф", u"ы", u"в", u"а", u"б", u"п", u"р", u"о", u"л", u"д", u"ж", u"#"],
-				[u"<", u"э", u"я", u"ч", u"с", u"м", u"и", u"т", u",", ".", u"-", u"ALL"],
-				[u"SHIFT", u"SPACE", u"@", u"ь", u"ю", u"ъ", u"OK", u"LEFT", u"RIGHT"]]
+				[u"а", u"б", u"в", u"г", u"д", u"е", u"ё", u"ж", u"з", u"и", u"й", u"+"],
+				[u"к", u"л", u"м", u"н", u"о", u"п", u"р", u"с", u"т", u"у", u"ф", u"#"],
+				[u"<", u"х", u"ц", u"ч", u"ш", u"щ", u"ъ", u"ы", u",", u".", u"-", u"ALL"],
+				[u"SHIFT", u"SPACE", u"@", u"ь", u"э", u"ю", u"я", u"OK", u"LEFT", u"RIGHT"]]
 			self.shiftkeys_list = [
 				[u"EXIT", u"!", u'"', u"§", u"$", u"%", u"&", u"/", u"(", u")", u"=", u"BACKSPACE"],
-				[u"Й", u"Ц", u"У", u"К", u"Е", u"Н", u"Г", u"Ш", u"Щ", u"З", u"I", u"Х", u"*"],
-				[u"Ф", u"Ы", u"В", u"А", u"П", u"Р", u"О", u"О", u"Л", u"Д", u"Ж", u"'"],
-				[u">", u"Э", u"Я", u"Ч", u"С", u"М", u"И", u"Т", u";", u":", u"_", u"CLEAR"],
-				[u"SHIFT", u"SPACE", u"?", u"\\", u"Ь", u"Б", u"Ю",  u"Ъ", u"OK", u"LEFT", u"RIGHT"]]
+				[u"А", u"Б", u"В", u"Г", u"Д", u"Е", u"Ё", u"Ж", u"З", u"И", u"Й", u"*"],
+				[u"К", u"Л", u"М", u"Н", u"О", u"П", u"Р", u"С", u"Т", u"У", u"Ф", u"'"],
+				[u">", u"Х", u"Ц", u"Ч", u"Ш", u"Щ", u"Ъ", u"Ы", u";", u":", u"_", u"CLEAR"],
+				[u"SHIFT", u"SPACE", u"?", u"\\", u"Ь", u"Э", u"Ю", u"Я", u"OK", u"LEFT", u"RIGHT"]]
 			self.nextLang = 'sv_SE'
 		elif self.lang == 'sv_SE':
 			self.keys_list = [
@@ -226,6 +226,20 @@ class VirtualKeyBoard(Screen):
 				[u"Α", u"Σ", u"Δ", u"Φ", u"Γ", u"Η", u"Ξ", u"Κ", u"Λ", u":", u'"', u"_"],
 				[u"|", u"Ζ", u"Χ", u"Ψ", u"Ω", u"Β", u"Ν", u"Μ", u"<", u">", u"?", u"CLEAR"],
 				[u"SHIFT", u"SPACE", u"Ά", u"Έ", u"Ή", u"Ί", u"Ό", u"Ύ", u"Ώ", u"Ϊ", u"Ϋ", u"OK"]]
+			self.nextLang = 'pl_PL'
+		elif self.lang == 'pl_PL':
+			self.keys_list = [
+				[u"EXIT", u"1", u"2", u"3", u"4", u"5", u"6", u"7", u"8", u"9", u"0", u"BACKSPACE"],
+				[u"q", u"w", u"e", u"r", u"t", u"y", u"u", u"i", u"o", u"p", u"-", u"["],
+				[u"a", u"s", u"d", u"f", u"g", u"h", u"j", u"k", u"l", u";", u"'", u"\\"],
+				[u"<", u"z", u"x", u"c", u"v", u"b", u"n", u"m", u",", ".", u"/", u"ALL"],
+				[u"SHIFT", u"SPACE", u"ą", u"ć", u"ę", u"ł", u"ń", u"ó", u"ś", u"ź", u"ż", u"OK"]]
+			self.shiftkeys_list = [
+				[u"EXIT", u"!", u"@", u"#", u"$", u"%", u"^", u"&", u"(", u")", u"=", u"BACKSPACE"],
+				[u"Q", u"W", u"E", u"R", u"T", u"Y", u"U", u"I", u"O", u"P", u"*", u"]"],
+				[u"A", u"S", u"D", u"F", u"G", u"H", u"J", u"K", u"L", u"?", u'"', u"|"],
+				[u">", u"Z", u"X", u"C", u"V", u"B", u"N", u"M", u";", u":", u"_", u"CLEAR"],
+				[u"SHIFT", u"SPACE", u"Ą", u"Ć", u"Ę", u"Ł", u"Ń", u"Ó", u"Ś", u"Ź", u"Ż", u"OK"]]
 			self.nextLang = 'en_EN'
 		else:
 			self.keys_list = [
@@ -241,7 +255,7 @@ class VirtualKeyBoard(Screen):
 				[u">", u"Z", u"X", u"C", u"V", u"B", u"N", u"M", u";", u":", u"_", u"CLEAR"],
 				[u"SHIFT", u"SPACE", u"OK", u"LEFT", u"RIGHT"]]
 			self.lang = 'en_EN'
-			self.nextLang = 'de_DE'		
+			self.nextLang = 'de_DE'
 		self["country"].setText(self.lang)
 		self.max_key=47+len(self.keys_list[4])
 
@@ -269,7 +283,7 @@ class VirtualKeyBoard(Screen):
 		for keys in self.shiftMode and self.shiftkeys_list or self.keys_list:
 			self.list.append(self.virtualKeyBoardEntryComponent(keys))
 		self.markSelectedKey()
-		
+
 	def markSelectedKey(self):
 		if self.previousSelectedKey is not None:
 			self.list[self.previousSelectedKey /12] = self.list[self.previousSelectedKey /12][:-1]
@@ -281,6 +295,9 @@ class VirtualKeyBoard(Screen):
 
 	def backClicked(self):
 		self["text"].deleteBackward()
+
+	def forwardClicked(self):
+		self["text"].deleteForward()
 
 	def shiftClicked(self):
 		self.smsChar = None

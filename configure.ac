@@ -13,6 +13,7 @@ AC_PROG_CC
 AC_PROG_CXX
 m4_ifdef([LT_INIT], [LT_INIT], [AC_PROG_LIBTOOL])
 AC_CONFIG_MACRO_DIR([m4])
+AC_OPENMP()
 
 AC_PATH_PROG(MSGFMT, msgfmt, AC_MSG_ERROR(Could not find msgfmt))
 
@@ -54,42 +55,6 @@ AC_ARG_WITH(boxtype,
 	[BOXTYPE="$withval"],[BOXTYPE="dm800"])
 AC_SUBST(BOXTYPE)
 AC_DEFINE_UNQUOTED(BOXTYPE,"$BOXTYPE",[box type])
-
-AC_ARG_WITH(distro,
-	[  --with-distro=NAME distro name [[openvix,openaaf,...]]],
-	[DISTRO="$withval"],[DISTRO="openmips"])
-AC_SUBST(DISTRO)
-AC_DEFINE_UNQUOTED(DISTRO,"$DISTRO",[distro name])
-
-AC_ARG_WITH(machinebrand,
-	[  --with-machinebrand=NAME brand name [[Vu,Xtrend,...]]],
-	[MACHINE_BRAND="$withval"],[MACHINE_BRAND="Vu+"])
-AC_SUBST(MACHINE_BRAND)
-AC_DEFINE_UNQUOTED(MACHINE_BRAND,"$MACHINE_BRAND",[machine brand])
-
-AC_ARG_WITH(machinename,
-	[  --with-machinename=NAME machine name [[Solo,Ultimo,...]]],
-	[MACHINE_NAME="$withval"],[MACHINE_NAME="Ultimo"])
-AC_SUBST(MACHINE_NAME)
-AC_DEFINE_UNQUOTED(MACHINE_NAME,"$MACHINE_NAME",[machine name])
-
-AC_ARG_WITH(imageversion,
-	[  --with-imageversion=NAME version number [[2.0]]],
-	[IMAGEVERSION="$withval"],[IMAGEVERSION=""])
-AC_SUBST(IMAGEVERSION)
-AC_DEFINE_UNQUOTED(IMAGEVERSION,"$IMAGEVERSION",[version number])
-
-AC_ARG_WITH(imagebuild,
-	[  --with-imagebuild=NAME build number [[5]]],
-	[IMAGEBUILD="$withval"],[IMAGEBUILD=""])
-AC_SUBST(IMAGEBUILD)
-AC_DEFINE_UNQUOTED(IMAGEBUILD,"$IMAGEBUILD",[build number])
-
-AC_ARG_WITH(driverdate,
-	[  --with-driverdate=NAME driver date [[5]]],
-	[DRIVERDATE="$withval"],[DRIVERDATE=""])
-AC_SUBST(DRIVERDATE)
-AC_DEFINE_UNQUOTED(DRIVERDATE,"$DRIVERDATE",[driver date])
 
 AM_CONDITIONAL(DREAMBOX, test `echo "$BOXTYPE" | cut -b 1-2` == "dm")
 AM_CONDITIONAL(HAVE_TEMPFANCONTROL, test "$BOXTYPE" == dm8000 -o "$BOXTYPE" == dm800se -o "$BOXTYPE" == dm500hd)
@@ -189,7 +154,7 @@ AC_SUBST(ENIGMA2_CFLAGS)
 
 CPPFLAGS="$CPPFLAGS $PYTHON_CPPFLAGS"
 CFLAGS="$CFLAGS $DEBUG_CFLAGS -Wall"
-CXXFLAGS="$CXXFLAGS $DEBUG_CFLAGS -Wall $BASE_CFLAGS $ENIGMA2_CFLAGS $PTHREAD_CFLAGS"
+CXXFLAGS="$CXXFLAGS $DEBUG_CFLAGS -Wall $BASE_CFLAGS $ENIGMA2_CFLAGS $PTHREAD_CFLAGS $OPENMP_CFLAGS"
 
 AC_CONFIG_FILES([
 Makefile
@@ -198,18 +163,14 @@ data/fonts/Makefile
 data/countries/Makefile
 data/extensions/Makefile
 data/keymaps/Makefile
+data/hw_info/Makefile
 data/rc_models/Makefile
-data/rc_models/et4000/Makefile
-data/rc_models/et6x00/Makefile
-data/rc_models/et6500/Makefile
-data/rc_models/et9500/Makefile
-data/rc_models/et9x00/Makefile
-data/rc_models/vu/Makefile
 data/skin_default/Makefile
 data/skin_default/menu/Makefile
 data/skin_default/icons/Makefile
 data/skin_default/buttons/Makefile
 data/skin_default/spinner/Makefile
+data/skin_default/LCDIcons/Makefile
 include/Makefile
 lib/Makefile
 lib/base/eenv.cpp

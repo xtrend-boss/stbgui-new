@@ -36,6 +36,8 @@ class Navigation:
 		self.__wasTimerWakeup = getFPWasTimerWakeup()
 		if self.__wasTimerWakeup:
 			RecordTimer.RecordTimerEntry.setWasInDeepStandby()
+		if config.usage.startup_to_standby.value:
+			Notifications.AddNotification(Screens.Standby.Standby)	
 
 	def wasTimerWakeup(self):
 		return self.__wasTimerWakeup
@@ -53,8 +55,8 @@ class Navigation:
 		for x in self.record_event:
 			x(rec_service, event)
 
-	def playService(self, ref, checkParentalControl=True, forceRestart=False):
-		oldref = self.currentlyPlayingServiceReference
+	def playService(self, ref, checkParentalControl=True, forceRestart=False, adjust=True):
+		oldref = self.currentlyPlayingServiceOrGroup
 		if ref and oldref and ref == oldref and not forceRestart:
 			print "ignore request to play already running service(1)"
 			return 0
@@ -62,11 +64,11 @@ class Navigation:
 		if ref is None:
 			self.stopService()
 			return 0
-		InfoBarInstance = InfoBar.instance
-		if not checkParentalControl or parentalControl.isServicePlayable(ref, boundFunction(self.playService, checkParentalControl=False, forceRestart=forceRestart)):
+		from Components.ServiceEventTracker import InfoBarCount
+		InfoBarInstance = InfoBarCount == 1 and InfoBar.instance
+		if not checkParentalControl or parentalControl.isServicePlayable(ref, boundFunction(self.playService, checkParentalControl=False, forceRestart=forceRestart, adjust=adjust)):
 			if ref.flags & eServiceReference.isGroup:
-				if not oldref:
-					oldref = eServiceReference()
+				oldref = self.currentlyPlayingServiceReference or eServiceReference()
 				playref = getBestPlayableServiceReference(ref, oldref)
 				print "playref", playref
 				if playref and oldref and playref == oldref and not forceRestart:
@@ -81,15 +83,15 @@ class Navigation:
 				self.pnav.stopService()
 				self.currentlyPlayingServiceReference = playref
 				self.currentlyPlayingServiceOrGroup = ref
-				if InfoBarInstance is not None:
-					InfoBarInstance.servicelist.servicelist.setCurrent(ref)
+				if InfoBarInstance and InfoBarInstance.servicelist.servicelist.setCurrent(ref, adjust):
+					self.currentlyPlayingServiceOrGroup = InfoBarInstance.servicelist.servicelist.getCurrent()
 				if self.pnav.playService(playref):
 					print "Failed to start", playref
 					self.currentlyPlayingServiceReference = None
 					self.currentlyPlayingServiceOrGroup = None
 				return 0
-		elif oldref:
-			InfoBarInstance.servicelist.servicelist.setCurrent(oldref)
+		elif oldref and InfoBarInstance and InfoBarInstance.servicelist.servicelist.setCurrent(oldref, adjust):
+			self.currentlyPlayingServiceOrGroup = InfoBarInstance.servicelist.servicelist.getCurrent()
 		return 1
 
 	def getCurrentlyPlayingServiceReference(self):

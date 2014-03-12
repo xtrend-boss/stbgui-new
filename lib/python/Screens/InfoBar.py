@@ -16,10 +16,10 @@ from Screens.InfoBarGenerics import InfoBarShowHide, \
 	InfoBarEPG, InfoBarSeek, InfoBarInstantRecord, InfoBarRedButton, InfoBarTimerButton, InfoBarVmodeButton, \
 	InfoBarAudioSelection, InfoBarAdditionalInfo, InfoBarNotifications, InfoBarDish, InfoBarUnhandledKey, \
 	InfoBarSubserviceSelection, InfoBarShowMovies, InfoBarTimeshift,  \
-	InfoBarServiceNotifications, InfoBarPVRState, InfoBarCueSheetSupport, InfoBarSimpleEventView, \
+	InfoBarServiceNotifications, InfoBarPVRState, InfoBarCueSheetSupport, \
 	InfoBarSummarySupport, InfoBarMoviePlayerSummarySupport, InfoBarTimeshiftState, InfoBarTeletextPlugin, InfoBarExtensions, \
 	InfoBarSubtitleSupport, InfoBarPiP, InfoBarPlugins, InfoBarServiceErrorPopupSupport, InfoBarJobman, InfoBarPowersaver, \
-	setResumePoint, delResumePoint
+	InfoBarHDMI, setResumePoint, delResumePoint
 
 profile("LOAD:InitBar_Components")
 from Components.ActionMap import HelpableActionMap
@@ -36,7 +36,7 @@ class InfoBar(InfoBarBase, InfoBarShowHide,
 	InfoBarSubserviceSelection, InfoBarTimeshift, InfoBarSeek, InfoBarCueSheetSupport,
 	InfoBarSummarySupport, InfoBarTimeshiftState, InfoBarTeletextPlugin, InfoBarExtensions,
 	InfoBarPiP, InfoBarPlugins, InfoBarSubtitleSupport, InfoBarServiceErrorPopupSupport, InfoBarJobman, InfoBarPowersaver,
-	Screen):
+	InfoBarHDMI, Screen):
 	
 	ALLOW_SUSPEND = True
 	instance = None
@@ -59,7 +59,7 @@ class InfoBar(InfoBarBase, InfoBarShowHide,
 				InfoBarAdditionalInfo, InfoBarNotifications, InfoBarDish, InfoBarSubserviceSelection, \
 				InfoBarTimeshift, InfoBarSeek, InfoBarCueSheetSupport, InfoBarSummarySupport, InfoBarTimeshiftState, \
 				InfoBarTeletextPlugin, InfoBarExtensions, InfoBarPiP, InfoBarSubtitleSupport, InfoBarJobman, InfoBarPowersaver, \
-				InfoBarPlugins, InfoBarServiceErrorPopupSupport:
+				InfoBarPlugins, InfoBarServiceErrorPopupSupport, InfoBarHDMI:
 			x.__init__(self)
 
 		self.helpList.append((self["actions"], "InfobarActions", [("showMovies", _("Watch recordings..."))]))
@@ -129,23 +129,25 @@ class InfoBar(InfoBarBase, InfoBarShowHide,
 			if ref and not self.session.nav.getCurrentlyPlayingServiceOrGroup():
 				self.session.nav.playService(ref)
 		else:
-			self.session.open(MoviePlayer, service, slist = self.servicelist, lastservice = ref)
+			self.session.open(MoviePlayer, service, slist=self.servicelist, lastservice=ref, infobar=self)
 
-class MoviePlayer(InfoBarBase, InfoBarShowHide, \
-		InfoBarMenu, \
-		InfoBarSeek, InfoBarShowMovies, InfoBarInstantRecord, InfoBarAudioSelection, HelpableScreen, InfoBarNotifications,
-		InfoBarServiceNotifications, InfoBarPVRState, InfoBarCueSheetSupport, InfoBarSimpleEventView,
-		InfoBarMoviePlayerSummarySupport, InfoBarSubtitleSupport, Screen, InfoBarTeletextPlugin,
-		InfoBarServiceErrorPopupSupport, InfoBarExtensions, InfoBarPlugins, InfoBarPiP):
+class MoviePlayer(InfoBarBase, InfoBarShowHide, InfoBarMenu, InfoBarSeek, InfoBarShowMovies, InfoBarInstantRecord,
+		InfoBarAudioSelection, HelpableScreen, InfoBarNotifications, InfoBarServiceNotifications, InfoBarPVRState,
+		InfoBarCueSheetSupport, InfoBarMoviePlayerSummarySupport, InfoBarSubtitleSupport, Screen, InfoBarTeletextPlugin,
+		InfoBarServiceErrorPopupSupport, InfoBarExtensions, InfoBarPlugins, InfoBarPiP, InfoBarHDMI):
 
 	ENABLE_RESUME_SUPPORT = True
 	ALLOW_SUSPEND = True
 		
-	def __init__(self, session, service, slist = None, lastservice = None):
+	def __init__(self, session, service, slist=None, lastservice=None, infobar=None):
 		Screen.__init__(self, session)
 		
 		self["actions"] = HelpableActionMap(self, "MoviePlayerActions",
 			{
+				"InfoButtonPressed": (self.openEventView, _("open Info...")),
+				"EPGButtonPressed": (self.showDefaultEPG,  _("open EPG...")),
+				"InfoButtonPressedLong": (self.showEventInfoPlugins, _("select Info...")),
+				"EPGButtonPressedLong": (self.showEventGuidePlugins,  _("select EPG...")),
 				"leavePlayer": (self.leavePlayer, _("leave movie player...")),
 				"leavePlayerOnExit": (self.leavePlayerOnExit, _("leave movie player..."))
 			})
@@ -160,14 +162,15 @@ class MoviePlayer(InfoBarBase, InfoBarShowHide, \
 		
 		for x in HelpableScreen, InfoBarShowHide, InfoBarMenu, \
 				InfoBarBase, InfoBarSeek, InfoBarShowMovies, InfoBarInstantRecord, \
-				InfoBarAudioSelection, InfoBarNotifications, InfoBarSimpleEventView, \
+				InfoBarAudioSelection, InfoBarNotifications, \
 				InfoBarServiceNotifications, InfoBarPVRState, InfoBarCueSheetSupport, \
 				InfoBarMoviePlayerSummarySupport, InfoBarSubtitleSupport, \
 				InfoBarTeletextPlugin, InfoBarServiceErrorPopupSupport, InfoBarExtensions, \
-				InfoBarPlugins, InfoBarPiP:
+				InfoBarPlugins, InfoBarPiP, InfoBarHDMI:
 			x.__init__(self)
 
 		self.servicelist = slist
+		self.infobar = infobar
 		self.lastservice = lastservice or session.nav.getCurrentlyPlayingServiceOrGroup()
 		session.nav.playService(service)
 		self.cur_service = service
@@ -307,7 +310,8 @@ class MoviePlayer(InfoBarBase, InfoBarShowHide, \
 	def up(self):
 		slist = self.servicelist
 		if slist and slist.dopipzap:
-			slist.moveUp()
+			if "keep" not in config.usage.servicelist_cursor_behavior.value:
+				slist.moveUp()
 			self.session.execDialog(slist)
 		else:
 			self.showMovies()
@@ -315,7 +319,8 @@ class MoviePlayer(InfoBarBase, InfoBarShowHide, \
 	def down(self):
 		slist = self.servicelist
 		if slist and slist.dopipzap:
-			slist.moveDown()
+			if "keep" not in config.usage.servicelist_cursor_behavior.value:
+				slist.moveDown()
 			self.session.execDialog(slist)
 		else:
 			self.showMovies()
@@ -370,17 +375,42 @@ class MoviePlayer(InfoBarBase, InfoBarShowHide, \
 		if self.session.pipshown:
 			if slist and slist.dopipzap:
 				slist.togglePipzap()
-			del self.session.pip
-			self.session.pipshown = False
+			if self.session.pipshown:
+				del self.session.pip
+				self.session.pipshown = False
 		else:
 			from Screens.PictureInPicture import PictureInPicture
 			self.session.pip = self.session.instantiateDialog(PictureInPicture)
 			self.session.pip.show()
-			self.session.pipshown = True
-			self.session.pip.playService(slist.getCurrentSelection())
+			if self.session.pip.playService(slist.getCurrentSelection()):
+				self.session.pipshown = True
+				self.session.pip.servicePath = slist.getCurrentServicePath()
+			else:
+				self.session.pipshown = False
+				del self.session.pip
+
+	def movePiP(self):
+		if self.session.pipshown:
+			InfoBarPiP.movePiP(self)
 
 	def swapPiP(self):
 		pass
+
+	def showDefaultEPG(self):
+		if self.infobar:
+			self.infobar.showMultiEPG()
+
+	def openEventView(self):
+		if self.infobar:
+			self.infobar.showDefaultEPG()
+
+	def showEventInfoPlugins(self):
+		if self.infobar:
+			self.infobar.showEventInfoPlugins()
+
+	def showEventGuidePlugins(self):
+		if self.infobar:
+			self.infobar.showEventGuidePlugins()
 
 	def showMovies(self):
 		ref = self.session.nav.getCurrentlyPlayingServiceOrGroup()

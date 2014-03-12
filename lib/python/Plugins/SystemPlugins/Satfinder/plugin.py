@@ -58,8 +58,12 @@ class Satfinder(ScanSetup, ServiceScan):
 			self.session.nav.stopService()
 			if not self.openFrontend():
 				if self.session.pipshown: # try to disable pip
+					if hasattr(self.session, 'infobar'):
+						if self.session.infobar.servicelist.dopipzap:
+							self.session.infobar.servicelist.togglePipzap()
+					if hasattr(self.session, 'pip'):
+						del self.session.pip
 					self.session.pipshown = False
-					del self.session.pip
 					if not self.openFrontend():
 						self.frontend = None # in normal case this should not happen
 		self.tuner = Tuner(self.frontend)
@@ -119,6 +123,8 @@ class Satfinder(ScanSetup, ServiceScan):
 
 	def retune(self, configElement):
 		returnvalue = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+		if not self.tuning_sat.value:
+			return
 		satpos = int(self.tuning_sat.value)
 		if self.tuning_type.value == "manual_transponder":
 			if self.scan_sat.system.value == eDVBFrontendParametersSatellite.System_DVB_S2:
@@ -195,11 +201,12 @@ class Satfinder(ScanSetup, ServiceScan):
 
 	def updatePreDefTransponders(self):
 		ScanSetup.predefinedTranspondersList(self, self.tuning_sat.orbital_position)
-		self.preDefTransponders.addNotifier(self.retune, initial_call = False)
+		if self.preDefTransponders:
+			self.preDefTransponders.addNotifier(self.retune, initial_call=False)
 
- 	def keyGoScan(self):
- 		self.frontend = None
- 		del self.raw_channel
+	def keyGoScan(self):
+		self.frontend = None
+		del self.raw_channel
 		tlist = []
 		self.addSatTransponder(tlist,
 			self.transponder[0], # frequency

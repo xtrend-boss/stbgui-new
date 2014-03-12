@@ -56,6 +56,12 @@ AC_ARG_WITH(boxtype,
 AC_SUBST(BOXTYPE)
 AC_DEFINE_UNQUOTED(BOXTYPE,"$BOXTYPE",[box type])
 
+AM_CONDITIONAL(XTREND, test `echo "$BOXTYPE" | cut -b 1-2` == "et")
+AM_CONDITIONAL(ET4X00, test "$BOXTYPE" == et4x00)
+AM_CONDITIONAL(ET5X00, test "$BOXTYPE" == et5x00)
+AM_CONDITIONAL(ET6X00, test "$BOXTYPE" == et6x00)
+AM_CONDITIONAL(ET9X00, test "$BOXTYPE" == et9x00)
+
 AM_CONDITIONAL(DREAMBOX, test `echo "$BOXTYPE" | cut -b 1-2` == "dm")
 AM_CONDITIONAL(HAVE_TEMPFANCONTROL, test "$BOXTYPE" == dm8000 -o "$BOXTYPE" == dm800se -o "$BOXTYPE" == dm500hd)
 if test `echo "$BOXTYPE" | cut -b 1-2` == "dm"; then
@@ -65,6 +71,16 @@ fi
 if test "$BOXTYPE" == "vusolo2" -o "$BOXTYPE" == "vuduo2"; then
 	AC_DEFINE(VUPLUS_RC_WORKAROUND, 1, [workaround for problem with vusolo2/vuduo2 event/rc driver])
 fi
+
+AC_ARG_WITH(nolcd,
+	AC_HELP_STRING([--with-nolcd], [disable ascii based lcd, yes or no]),
+	[[withnolcd=$withval]],
+	[[withnolcd=no]]
+)
+if test x"$withnolcd" != xno ; then
+	AC_DEFINE(NO_LCD, 1,[Define when disable an ascii based lcd device])
+fi
+AM_CONDITIONAL(NO_LCD, test x"$withnolcd" != xno)
 
 AC_ARG_WITH(textlcd,
 	AC_HELP_STRING([--with-textlcd], [use ascii based lcd, yes or no]),
@@ -86,6 +102,55 @@ if test x"$withcolorlcd" != xno ; then
 fi
 AM_CONDITIONAL(HAVE_COLORLCD, test x"$withcolorlcd" != xno)
 
+AC_ARG_WITH(colorlcd128,
+	AC_HELP_STRING([--with-colorlcd128], [use 128x64 16bpp color display, yes or no]),
+	[[withcolorlcd128=$withval]],
+	[[withcolorlcd128=no]]
+)
+if test x"$withcolorlcd128" != xno ; then
+	AC_DEFINE(HAVE_COLORLCD128, 1,[Define when using a 128x64 color display device])
+fi
+AM_CONDITIONAL(HAVE_COLORLCD128, test x"$withcolorlcd" != xno)
+
+AC_ARG_WITH(colorlcd220,
+	AC_HELP_STRING([--with-colorlcd220], [use 220x176 16bpp color display, yes or no]),
+	[[withcolorlcd220=$withval]],
+	[[withcolorlcd220=no]]
+)
+if test x"$withcolorlcd220" != xno ; then
+	AC_DEFINE(HAVE_COLORLCD220, 1,[Define when using a 220x176 color display device])
+fi
+AM_CONDITIONAL(HAVE_COLORLCD220, test x"$withcolorlcd220" != xno)
+
+AC_ARG_WITH(bwlcd255,
+	AC_HELP_STRING([--with-bwlcd255], [use 255x64 1bpp black and white display, yes or no]),
+	[[withbwlcd255=$withval]],
+	[[withbwlcd255=no]]
+)
+if test x"$withbwlcd255" != xno ; then
+	AC_DEFINE(HAVE_BWLCD255, 1,[Define when using a 255x64 black and white display device])
+fi
+AM_CONDITIONAL(HAVE_BWLCD255, test x"$withbwlcd255" != xno)
+
+AC_ARG_WITH(bwlcd140,
+	AC_HELP_STRING([--with-bwlcd140], [use 140x32 1bpp black and white display, yes or no]),
+	[[withbwlcd140=$withval]],
+	[[withbwlcd140=no]]
+)
+if test x"$withbwlcd140" != xno ; then
+	AC_DEFINE(HAVE_BWLCD140, 1,[Define when using a 140x32 black and white display device])
+fi
+AM_CONDITIONAL(HAVE_BWLCD140, test x"$withbwlcd140" != xno)
+
+AC_ARG_WITH(bwlcd128,
+	AC_HELP_STRING([--with-bwlcd128], [use 128x32 1bpp black and white display, yes or no]),
+	[[withbwlcd128=$withval]],
+	[[withbwlcd128=no]]
+)
+if test x"$withbwlcd128" != xno ; then
+	AC_DEFINE(HAVE_BWLCD128, 1,[Define when using a 128x32 black and white display device])
+fi
+AM_CONDITIONAL(HAVE_BWLCD128, test x"$withbwlcd128" != xno)
 
 AC_ARG_WITH(oldpvr,
 	AC_HELP_STRING([--with-oldpvr], [use /dev/misc/pvr instead of /dev/dvb/adapterX/dvrX, yes or no]),
@@ -160,11 +225,15 @@ AC_CONFIG_FILES([
 Makefile
 data/Makefile
 data/fonts/Makefile
-data/countries/Makefile
 data/extensions/Makefile
 data/keymaps/Makefile
-data/hw_info/Makefile
-data/rc_models/Makefile
+data/displaytext/Makefile
+data/display96/Makefile
+data/display128/Makefile
+data/display220/Makefile
+data/vfd128/Makefile
+data/vfd140/Makefile
+data/vfd255/Makefile
 data/skin_default/Makefile
 data/skin_default/menu/Makefile
 data/skin_default/icons/Makefile

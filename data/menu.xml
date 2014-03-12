@@ -15,12 +15,13 @@
 -->
 		<item level="0" text="Timer" entryID="timer_edit"><screen module="TimerEdit" screen="TimerEditList" /></item>
 		<item level="1" text="VCR scart" entryID="scart_switch" configcondition="config.usage.show_vcr_scart" requires="ScartSwitch"><code>self.session.scart.VCRSbChanged(3)</code></item>
-		<item level="0" text="Language" entryID="language_setup"><screen module="LanguageSelection" /></item>
+
 		<menu level="0" text="Information" entryID="info_screen">
 			<id val="information" />
 			<item level="1" text="Service" entryID="service_info_screen"><screen module="ServiceInfo" screen="ServiceInfo"/></item>
 			<item level="0" text="About" entryID="about_screen"><screen module="About" /></item>
 		</menu>
+
 		<item level="1" text="Plugins" entryID="plugin_selection"><screen module="PluginBrowser" screen="PluginBrowser" /></item>
 		<item level="1" text="Extensions" entryID="extension_menu">
 <code>
@@ -41,10 +42,7 @@ if InfoBar and InfoBar.instance:
 				<id val="system" />
 				<item level="0" entryID="usage_setup"><setup id="usage" /></item>
 				<item level="0" entryID="user_interface"><setup id="userinterface" /></item>
-				<menu level="2" text="EPG" entryID="epg_menu">
-					<id val="epg" />
-					<item level="0" entryID="epg_settings"><setup id="epgsettings" /></item>
-				</menu>
+				<item level="0" entryID="epg_settings"><setup id="epgsettings" /></item>
 				<item level="0" entryID="recording_setup"><setup id="recording" /></item>
 				<item level="2" entryID="subtitle_setup"><setup id="subtitlesetup" /></item>
 				<item level="1" entryID="autolanguage_setup"><setup id="autolanguagesetup" /></item>
@@ -62,6 +60,7 @@ if InfoBar and InfoBar.instance:
 				<item requires="Display"><setup level="1" id="lcd" /></item>
 				<item text="Keyboard"><setup id="keyboard" /></item>
 				<item level="2" text="Recording paths" entryID="RecordPaths"><screen module="RecordPaths" screen="RecordPathsSettings" /></item>
+				<item level="0" text="Language" entryID="language_setup"><screen module="LanguageSelection" /></item>
 				<item level="0" entryID="timezone_setup"><setup id="timezone"/></item>
 			</menu>
 			<item weight="15" level="0" text="Parental control" entryID="parental_setup"><screen module="ParentalControlSetup" screen="ParentalControlSetup" /></item>

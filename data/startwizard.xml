@@ -1,6 +1,8 @@
+<!--suppress XmlUnboundNsPrefix -->
 <wizard>
 		<step id="start" nextstep="introduction">
-			<text value="Welcome.\n\nThis start wizard will guide you through the basic setup of your receiver.\nPress the OK button on your remote control to move to the next step." />
+			<text value="Welcome.\n\nThis start wizard will guide you through the basic setup of your %s %s.\nPress the OK button on your remote control to move to the next step." />
+			<displaytext value="Welcome.\n\nThis start wizard will guide you through the basic setup of your %s %s.\nPress the OK button on your remote control to move to the next step." />
 			<code>
 self.clearSelectedKeys()
 self.selectKey("OK")
@@ -8,6 +10,7 @@ self.selectKey("OK")
 		</step>
 		<step id="introduction" >
 			<text value="Use the up/down keys on your remote control to select an option. After that, press OK." />
+			<displaytext value="Use the up/down keys on your remote control to select an option. After that, press OK." />
 			<list>
 				<listentry caption="Use the wizard to set up basic features" step="network" />
 				<listentry caption="Exit the wizard" step="end" />
@@ -20,6 +23,7 @@ self.selectKey("DOWN")
 		</step>
 		<step id="network" >
 			<text value="Please connect your receiver to the internet" />
+			<displaytext value="Please connect your receiver to the internet" />
 			<list>
 				<listentry caption="Check the internet connection" step="update" />
 				<listentry caption="Skip internet connection check (disables automatic package installation)" step="nima" />
@@ -32,6 +36,7 @@ self.selectKey("DOWN")
 		</step>
 		<step id="update">
 			<text value="Checking the internet connection" />
+			<displaytext value="Checking the internet connection" />
 			<config screen="InstallWizard" module="InstallWizard" args="0" type="ConfigList" />
 			<code>
 self.clearSelectedKeys()
@@ -43,6 +48,7 @@ self.selectKey("OK")
 self.condition = not config.misc.installwizard.ipkgloaded.value
 			</condition>
 			<text value="Your receiver does not have an internet connection" />
+			<displaytext value="Your receiver is not connected to the internet" />
 			<list>
 				<listentry caption="Check the internet connection again" step="update" />
 				<listentry caption="Skip internet connection check (disables automatic package installation)" step="nima" />
@@ -59,6 +65,7 @@ from Components.NimManager import nimmanager
 self.condition = len(nimmanager.nim_slots) > 0 and not nimmanager.nim_slots[0].empty
 			</condition>
 			<text value="Please set up tuner A" />
+			<displaytext value="Please set up tuner A" />
 			<config screen="NimSetup" module="Satconfig" args="0" type="ConfigList" />
 			<code>
 self.clearSelectedKeys()
@@ -72,6 +79,7 @@ from Components.NimManager import nimmanager
 self.condition = len(nimmanager.nim_slots) > 1 and not nimmanager.nim_slots[1].empty
 			</condition>
 			<text value="Please set up tuner B" />
+			<displaytext value="Please set up tuner B" />
 			<config screen="NimSetup" module="Satconfig" args="1" type="ConfigList" />
 			<code>
 self.clearSelectedKeys()
@@ -85,6 +93,7 @@ from Components.NimManager import nimmanager
 self.condition = len(nimmanager.nim_slots) > 2 and not nimmanager.nim_slots[2].empty
 			</condition>
 			<text value="Please set up tuner C" />
+			<displaytext value="Please set up tuner C" />
 			<config screen="NimSetup" module="Satconfig" args="2" type="ConfigList" />
 			<code>
 self.clearSelectedKeys()
@@ -98,6 +107,7 @@ from Components.NimManager import nimmanager
 self.condition = len(nimmanager.nim_slots) > 3 and not nimmanager.nim_slots[3].empty
 			</condition>
 			<text value="Please set up tuner D" />
+			<displaytext value="Please set up tuner D" />
 			<config screen="NimSetup" module="Satconfig" args="3" type="ConfigList" />
 			<code>
 self.clearSelectedKeys()
@@ -111,6 +121,7 @@ from Components.NimManager import nimmanager
 self.condition = nimmanager.somethingConnected() and config.misc.installwizard.hasnetwork.value and config.misc.installwizard.ipkgloaded.value
 			</condition>
 			<text value="Do you want to install a channel list?" />
+			<displaytext value="Do you want to install a channel list?" />
 			<config screen="InstallWizard" module="InstallWizard" args="1" type="ConfigList" />
 			<code>
 self.clearSelectedKeys()
@@ -120,6 +131,7 @@ self.selectKey("RIGHT")
 		</step>
 		<step id="scanquestion">
 			<text value="Do you want to do a service scan?" />
+			<displaytext value="Do you want to do a service scan?" />
 			<condition>
 from Components.NimManager import nimmanager
 self.condition = nimmanager.somethingConnected() and not config.misc.installwizard.channellistdownloaded.value
@@ -137,8 +149,9 @@ self.hideRc()
 			<condition>
 from Components.NimManager import nimmanager
 self.condition = nimmanager.somethingConnected() and not config.misc.installwizard.channellistdownloaded.value
-			</condition>			
+			</condition>
 			<text value="What do you want to scan?" />
+			<displaytext value="What do you want to scan?" />
 			<config screen="ScanSimple" module="ScanSetup" type="ConfigList" />
 		</step>
 		<step id="manualscan">
@@ -147,6 +160,7 @@ from Components.NimManager import nimmanager
 self.condition = nimmanager.somethingConnected() and not config.misc.installwizard.channellistdownloaded.value
 			</condition>
 			<text value="What do you want to scan?" />
+			<displaytext value="What do you want to scan?" />
 			<config screen="ScanSetup" module="ScanSetup" type="ConfigList" />
 		</step>
 		<step id="nextscan">
@@ -155,6 +169,7 @@ from Components.NimManager import nimmanager
 self.condition = nimmanager.somethingConnected() and not config.misc.installwizard.channellistdownloaded.value
 			</condition>
 			<text value="Do you want to do another manual service scan?" />
+			<displaytext value="Do you want to do another manual service scan?" />
 			<list>
 				<listentry caption="No" step="softcam" />
 				<listentry caption="Yes, do another manual scan now" step="manualscan" />
@@ -173,7 +188,8 @@ self.selectKey("RIGHT")
 			</code>
 		</step>
 		<step id="end" laststep="true">
-			<text value="Thank you for using the wizard. Your receiver is now ready for use.\nPress OK to start using your receiver." />
+			<text value="Thank you for using the wizard. Your %s %s is now ready to use.\nPlease press OK to start using your %s %s." />
+			<displaytext value="Thank you for using the wizard. Your %s %s is now ready to use.\nPlease press OK to start using your %s %s." />
 			<code>
 self.clearSelectedKeys()
 self.selectKey("OK")

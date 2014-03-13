@@ -225,6 +225,7 @@ AC_CONFIG_FILES([
 Makefile
 data/Makefile
 data/fonts/Makefile
+data/countries/Makefile
 data/extensions/Makefile
 data/keymaps/Makefile
 data/hw_info/Makefile

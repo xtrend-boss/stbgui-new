@@ -50,6 +50,24 @@ def ReadNewfeed():
 	f.close()
 	return newfeed
 
+def check_hdd(session):
+	if not os.path.exists("/media/hdd"):
+		session.open(MessageBox, _("No /hdd found !!\nPlease make sure you have a HDD mounted.\n\nExit plugin."), type = MessageBox.TYPE_ERROR)
+		return False
+	if Freespace('/media/hdd') < 300000:
+		session.open(MessageBox, _("Not enough free space on /hdd !!\nYou need at least 300Mb free space.\n\nExit plugin."), type = MessageBox.TYPE_ERROR)
+		return False
+	if not os.path.exists(ofgwritePath):
+		session.open(MessageBox, _('ofgwrite not found !!\nPlease make sure you have ofgwrite installed in /usr/bin/ofgwrite.\n\nExit plugin.'), type = MessageBox.TYPE_ERROR)
+		return False
+
+	if not os.path.exists(imagePath):
+		os.mkdir(imagePath)
+	if os.path.exists(flashPath):
+		os.system('rm -rf ' + flashPath)
+	os.mkdir(flashPath)
+	return True
+
 class FlashOnline(Screen):
 	skin = """
 	<screen position="center,center" size="560,400" title="Flash On the Fly">
@@ -86,24 +104,6 @@ class FlashOnline(Screen):
 			"cancel": self.quit,
 		}, -2)
 
-	def check_hdd(self):
-		if not os.path.exists("/media/hdd"):
-			self.session.open(MessageBox, _("No /hdd found !!\nPlease make sure you have a HDD mounted.\n\nExit plugin."), type = MessageBox.TYPE_ERROR)
-			return False
-		if Freespace('/media/hdd') < 300000:
-			self.session.open(MessageBox, _("Not enough free space on /hdd !!\nYou need at least 300Mb free space.\n\nExit plugin."), type = MessageBox.TYPE_ERROR)
-			return False
-		if not os.path.exists(ofgwritePath):
-			self.session.open(MessageBox, _('ofgwrite not found !!\nPlease make sure you have ofgwrite installed in /usr/bin/ofgwrite.\n\nExit plugin.'), type = MessageBox.TYPE_ERROR)
-			return False
-
-		if not os.path.exists(imagePath):
-			os.mkdir(imagePath)
-		if os.path.exists(flashPath):
-			os.system('rm -rf ' + flashPath)
-		os.mkdir(flashPath)
-		return True
-
 	def quit(self):
 		self.close()	
 		
@@ -111,13 +111,13 @@ class FlashOnline(Screen):
 		pass
 
 	def green(self):
-		if self.check_hdd():
+		if check_hdd(self.session):
 			self.session.open(doFlashImage, online = True)
 		else:
 			self.close()
 
 	def yellow(self):
-		if self.check_hdd():
+		if check_hdd(self.session):
 			self.session.open(doFlashImage, online = False)
 		else:
 			self.close()

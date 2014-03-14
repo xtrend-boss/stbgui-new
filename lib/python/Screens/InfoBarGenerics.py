@@ -33,6 +33,7 @@ from Screens.RdsDisplay import RdsInfoDisplay, RassInteractive
 from Screens.TimeDateInput import TimeDateInput
 from Screens.UnhandledKey import UnhandledKey
 from ServiceReference import ServiceReference, isPlayableForCur
+from Tools.Directories import fileExists, pathExists
 
 from Tools import Notifications, ASCIItranslit
 from Tools.Directories import fileExists, getRecordingFilename, moveFiles
@@ -375,8 +376,6 @@ class NumberZap(Screen):
 			else:
 				self.service, self.bouquet = self.searchNumber(int(self["number"].getText()))
 			self ["servicename"].text = ServiceReference(self.service).getServiceName()
-		for x in self.onChanged:
-			x()
 
 	def keyNumberGlobal(self, number):
 		self.Timer.start(1000, True)
@@ -387,19 +386,16 @@ class NumberZap(Screen):
 
 		if len(self.field) >= 5:
 			self.keyOK()
-		for x in self.onChanged:
-			x()
 
 	def __init__(self, session, number, searchNumberFunction = None):
 		Screen.__init__(self, session)
 		self.field = str(number)
 		self.searchNumber = searchNumberFunction
 		self.startBouquet = None
-		self.onChanged = []
 
-		self["channel"] = StaticText(_("Channel:"))
-		self["number"] = StaticText(self.field)
-		self["servicename"] = StaticText()
+		self["channel"] = Label(_("Channel:"))
+		self["number"] = Label(self.field)
+		self["servicename"] = Label()
 
 		self.handleServiceName()
 
@@ -1781,8 +1777,22 @@ class InfoBarExtensions:
 
 		self["InstantExtensionsActions"] = HelpableActionMap(self, "InfobarExtensions",
 			{
-				"extensions": (self.showExtensionSelection, _("Show extensions...")),
+				"extensions": (self.showExtensionSelection, _("view extensions...")),
+############################ pcd ################################
+				"xtapanel": (self.ct, _("open xta panel...")),
+############################# pcd end ############################
 			}, 1) # lower priority
+############################### pcd #########################
+	def ct(self):
+		try:
+			pluginlist = []
+			pluginlist = plugins.getPlugins(PluginDescriptor.WHERE_EXTENSIONSMENU)
+			for plugin in pluginlist:
+				if "XTA Panel" in str(plugin.name):
+					plugin(session=self.session)
+		except:
+			return
+################################# pcd end #########################
 
 	def addExtension(self, extension, key = None, type = EXTENSION_SINGLE):
 		self.list.append((type, extension, key))
@@ -2240,6 +2250,7 @@ class InfoBarSubserviceSelection:
 	def __init__(self):
 		self["SubserviceSelectionAction"] = HelpableActionMap(self, "InfobarSubserviceSelectionActions",
 			{
+				"GreenPressed": (self.GreenPressed),
 				"subserviceSelection": (self.subserviceSelection, _("Subservice list...")),
 			})
 
@@ -2257,6 +2268,20 @@ class InfoBarSubserviceSelection:
 		self.onClose.append(self.__removeNotifications)
 
 		self.bsel = None
+
+	def GreenPressed(self):
+		service = self.session.nav.getCurrentService()
+		subservices = service and service.subServices()
+		if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/CustomSubservices/plugin.pyo'):
+                        self.subserviceSelection()
+                elif not subservices or subservices.getNumberOfSubservices() == 0:
+			try:
+				from Screens.PluginBrowser import PluginBrowser
+				self.session.open(PluginBrowser)
+			except:
+				pass
+		else:
+			self.subserviceSelection()
 
 	def __removeNotifications(self):
 		self.session.nav.event.remove(self.checkSubservicesAvail)

@@ -59,6 +59,7 @@ class PluginDescriptor:
 	# and 'None' as parameter to call the plugin from the Softwaremanager menus. "menuEntryName" and "menuEntryDescription"
 	# should be provided to name and describe the new menu entry.
 	WHERE_SOFTWAREMANAGER = 14
+	WHERE_NETWORKMOUNTS = 15
 
 
 	def __init__(self, name = "Plugin", where = [ ], description = "", icon = None, fnc = None, wakeupfnc = None, needsRestart = None, internal = False, weight = 0):

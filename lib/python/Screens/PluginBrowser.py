@@ -240,7 +240,7 @@ class PluginDownloadBrowser(Screen):
 	def createPluginFilter(self):
 		#Create Plugin Filter
 		self.PLUGIN_PREFIX2 = []
-		if config.pluginfilter.openxta.getValue():
+		if config.pluginfilter.xta.getValue():
 			self.PLUGIN_PREFIX2.append(self.PLUGIN_PREFIX + 'xta')
                 if config.pluginfilter.drivers.getValue():
 			self.PLUGIN_PREFIX2.append(self.PLUGIN_PREFIX + 'drivers')
@@ -592,7 +592,7 @@ class PluginFilter(ConfigListScreen, Screen):
 	def createSetup(self):
 		self.editListEntry = None
 		self.list = []
-		self.list.append(getConfigListEntry(_("openxta"), config.pluginfilter.xta, _("This allows you to show all specific xta in downloads")))
+		self.list.append(getConfigListEntry(_("xta"), config.pluginfilter.xta, _("This allows you to show all specific xta in downloads")))
                 self.list.append(getConfigListEntry(_("drivers"), config.pluginfilter.drivers, _("This allows you to show drivers modules in downloads")))
 		self.list.append(getConfigListEntry(_("extensions"), config.pluginfilter.extensions, _("This allows you to show extensions modules in downloads")))
 		self.list.append(getConfigListEntry(_("systemplugins"), config.pluginfilter.systemplugins, _("This allows you to show systemplugins modules in downloads")))

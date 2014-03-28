@@ -3329,10 +3329,10 @@ void eDVBServicePlay::checkSubtitleTiming()
 		else
 			return;
 
-//		eDebug("%lld %lld", pos, show_time);
 		int diff = show_time - pos;
+//		eDebug("Subtitle show %d page.pts=%lld pts=%lld diff=%d", type, show_time, pos, diff);
 
-		if ((diff / 90) < 20 || diff > 1800000)
+		if (diff < 20*90 || diff > 1800000)
 		{
 			if (type == TELETEXT)
 			{

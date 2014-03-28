@@ -1,9 +1,10 @@
-SUBDIRS = countries fonts extensions keymaps skin_default
+SUBDIRS = countries fonts extensions keymaps skin_default hw_info
 
 dist_pkgdata_DATA = \
 	encoding.conf \
 	keymap.xml \
 	keymap.mqb \
+	mqbfunctions.xml \
 	menu.xml \
 	prev.png \
 	radio.mvi \

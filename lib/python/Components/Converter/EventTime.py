@@ -50,8 +50,6 @@ class EventTime(Poll, Converter, object):
 			return st
 		if self.type == self.REMAINING:
 			return (duration, st - int(time()))
-		if self.type == self.RUNNING:
-			return (duration, int(time()) - event.getBeginTime())
 
 	@cached
 	def getValue(self):

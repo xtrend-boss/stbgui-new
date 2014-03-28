@@ -185,7 +185,7 @@ class ChannelContextMenu(Screen):
 				if not csel.movemode:
 					append_when_current_valid(current, menu, (_("enable move mode"), self.toggleMoveMode), level = 1)
 					if not inBouquetRootList and current_root and not (current_root.flags & eServiceReference.isGroup):
-						if current.type != -1:
+						if not current.toString().startswith("-1"):
 							menu.append(ChoiceEntryComponent(text = (_("add marker"), self.showMarkerInputBox)))
 						if haveBouquets:
 							append_when_current_valid(current, menu, (_("enable bouquet edit"), self.bouquetMarkStart), level = 0)
@@ -935,41 +935,23 @@ class ChannelSelectionBase(Screen):
 		self.mode = MODE_TV
 		self.servicePath = self.servicePathTV
 		self.recallBouquetMode()
-		titlesearch = self.getTitle() 
-                if titlesearch == "Channel selection": 
-                        title = self.maintitle  
-                        pos = title.find(" (")
-                        if pos != -1:
-			        title = title[:pos]
-		        title += _(" (TV)")
-                        self.setTitle(title)
-                else:
-		        title = self.getTitle()
-		        pos = title.find(" (")
-		        if pos != -1:
-			        title = title[:pos]
-                        title += _(" (TV)")
-                        self.setTitle(title)
+		title = self.maintitle
+		pos = title.find(" (")
+		if pos != -1:
+			title = title[:pos]
+		title += _(" (TV)")
+		self.setTitle(title)
 
 	def setRadioMode(self):
 		self.mode = MODE_RADIO
 		self.servicePath = self.servicePathRadio
 		self.recallBouquetMode()
-                titlesearch = self.getTitle() 
-                if titlesearch == "Channel selection": 
-                        title = self.maintitle  
-                        pos = title.find(" (")
-                        if pos != -1:
-			        title = title[:pos]
-		        title += _(" (Radio)")
-                        self.setTitle(title)
-                else:
-		        title = self.getTitle()
-		        pos = title.find(" (")
-		        if pos != -1:
-			        title = title[:pos]
-                        title += _(" (Radio)")
-                        self.setTitle(title)
+		title = self.maintitle
+		pos = title.find(" (")
+		if pos != -1:
+			title = title[:pos]
+		title += _(" (Radio)")
+		self.setTitle(title)
 
 	def setRoot(self, root, justSet=False):
 		if self.startRoot is None:
@@ -1027,6 +1009,8 @@ class ChannelSelectionBase(Screen):
 				if end_ref is not None:
 					if Len > 2:
 						titleStr += '/../'
+					else:
+						titleStr += '/'
 					nameStr = self.getServiceName(end_ref)
 					titleStr += nameStr
 				self.setTitle(titleStr)
@@ -1510,7 +1494,7 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 		elif self.bouquet_mark_edit != OFF:
 			if not (self.bouquet_mark_edit == EDIT_ALTERNATIVES and ref.flags & eServiceReference.isGroup):
 				self.doMark()
-		elif not (ref.flags & eServiceReference.isMarker or ref.type == -1):
+		elif not (ref.flags & eServiceReference.isMarker or ref.toString().startswith("-1")):
 			root = self.getRoot()
 			if not root or not (root.flags & eServiceReference.isGroup):
 				self.zap(enable_pipzap = doClose, preview_zap = not doClose)

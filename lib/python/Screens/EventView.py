@@ -39,7 +39,7 @@ class EventViewBase:
 		self["duration"] = Label()
 		self["now"] = Label()
 		self["next"] = Label()
-		self["key_red"] = Button("")
+                self["key_red"] = Button("")
 		if similarEPGCB is not None:
 			self.SimilarBroadcastTimer = eTimer()
 			self.SimilarBroadcastTimer.callback.append(self.getSimilarEvents)
@@ -196,7 +196,7 @@ class EventViewBase:
 		self["duration"].setText(_("%d min")%(event.getDuration()/60))
 		self["now"].setText(_("Now") + _(":"))
 		self["next"].setText(_("Next up") + _(":"))
-		self["key_red"].setText("")
+                self["key_red"].setText("")
 		if self.SimilarBroadcastTimer is not None:
 			self.SimilarBroadcastTimer.start(400,True)
 

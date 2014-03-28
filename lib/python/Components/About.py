@@ -1,10 +1,9 @@
 import sys
 import os
 import time
-from Tools.HardwareInfo import HardwareInfo
 
 def getVersionString():
-	return getImageVersionString()
+	return getEnigmaVersionString()
 
 def getImageVersionString():
 	try:
@@ -77,7 +76,16 @@ def getCpuCoresString():
 		return "unavailable"
 
 def getHardwareTypeString():
-	return HardwareInfo().get_device_string()
+	try:
+		if os.path.isfile("/proc/stb/info/boxtype"):
+			return open("/proc/stb/info/boxtype").read().strip().upper() + " (" + open("/proc/stb/info/board_revision").read().strip() + "-" + open("/proc/stb/info/version").read().strip() + ")"
+		if os.path.isfile("/proc/stb/info/vumodel"):
+			return "VU+" + open("/proc/stb/info/vumodel").read().strip().upper() + "(" + open("/proc/stb/info/version").read().strip().upper() + ")" 
+		if os.path.isfile("/proc/stb/info/model"):
+			return open("/proc/stb/info/model").read().strip().upper()
+	except:
+		pass
+	return _("unavailable")
 
 def getImageTypeString():
 	try:

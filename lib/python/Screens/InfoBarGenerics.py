@@ -5,14 +5,13 @@ from Components.ActionMap import NumberActionMap
 from Components.Harddisk import harddiskmanager
 from Components.Input import Input
 from Components.Label import Label
-from Components.MovieList import AUDIO_EXTENSIONS, MOVIE_EXTENSIONS, DVD_EXTENSIONS
+from Components.MovieList import AUDIO_EXTENSIONS
 from Components.PluginComponent import plugins
 from Components.ServiceEventTracker import ServiceEventTracker
 from Components.Sources.Boolean import Boolean
 from Components.config import config, ConfigBoolean, ConfigClock
 from Components.SystemInfo import SystemInfo
 from Components.UsageConfig import preferredInstantRecordPath, defaultMoviePath, ConfigSelection
-from Components.Sources.StaticText import StaticText
 from EpgSelection import EPGSelection
 from Plugins.Plugin import PluginDescriptor
 
@@ -33,7 +32,6 @@ from Screens.RdsDisplay import RdsInfoDisplay, RassInteractive
 from Screens.TimeDateInput import TimeDateInput
 from Screens.UnhandledKey import UnhandledKey
 from ServiceReference import ServiceReference, isPlayableForCur
-from Tools.Directories import fileExists, pathExists
 
 from Tools import Notifications, ASCIItranslit
 from Tools.Directories import fileExists, getRecordingFilename, moveFiles
@@ -1503,7 +1501,8 @@ class InfoBarTimeshiftState(InfoBarPVRState):
 		self.__hideTimer.callback.append(self.__hideTimeshiftState)
 
 	def _mayShow(self):
-		if self.shown and self.timeshiftEnabled():
+		#if self.shown and self.timeshiftEnabled():
+		if self.shown and self.seekstate != self.SEEK_STATE_PLAY and self.timeshiftEnabled():
 			self.pvrStateDialog.show()
 			if self.seekstate == self.SEEK_STATE_PLAY and not self.shown:
 				self.__hideTimer.start(5*1000, True)
@@ -1778,21 +1777,18 @@ class InfoBarExtensions:
 		self["InstantExtensionsActions"] = HelpableActionMap(self, "InfobarExtensions",
 			{
 				"extensions": (self.showExtensionSelection, _("view extensions...")),
-############################ pcd ################################
 				"xtapanel": (self.ct, _("open xta panel...")),
-############################# pcd end ############################
 			}, 1) # lower priority
-############################### pcd #########################
-	def ct(self):
-		try:
-			pluginlist = []
-			pluginlist = plugins.getPlugins(PluginDescriptor.WHERE_EXTENSIONSMENU)
-			for plugin in pluginlist:
-				if "XTA Panel" in str(plugin.name):
-					plugin(session=self.session)
-		except:
-			return
-################################# pcd end #########################
+        def ct(self):
+                try:
+                        pluginlist = []
+                        pluginlist = plugins.getPlugins(PluginDescriptor.WHERE_EXTENSIONSMENU)
+                        for plugin in pluginlist:
+                                if "XTA Panel" in str(plugin.name):
+                                        plugin(session=self.session)
+                except:
+                        return
+
 
 	def addExtension(self, extension, key = None, type = EXTENSION_SINGLE):
 		self.list.append((type, extension, key))
@@ -1822,6 +1818,7 @@ class InfoBarExtensions:
 			else:
 				for y in x[1]():
 					self.updateExtension(y[0], y[1])
+
 
 	def showExtensionSelection(self):
 		self.updateExtensions()
@@ -1904,13 +1901,13 @@ class InfoBarPiP:
 		if SystemInfo.get("NumVideoDecoders", 1) > 1:
 			self["PiPActions"] = HelpableActionMap(self, "InfobarPiPActions",
 				{
-					"activatePiP": (self.activePiP, _("Activate PiP")),
+					"activatePiP": (self.showPiP, _("Activate PiP")),
 				})
 			if (self.allowPiP):
 				self.addExtension((self.getShowHideName, self.showPiP, lambda: True), "blue")
 				self.addExtension((self.getMoveName, self.movePiP, self.pipShown), "green")
 				self.addExtension((self.getSwapName, self.swapPiP, self.pipShown), "yellow")
-				self.addExtension((self.getTogglePipzapName, self.togglePipzap, lambda: True), "red")
+				self.addExtension((self.getTogglePipzapName, self.togglePipzap, self.pipShown), "red")
 			else:
 				self.addExtension((self.getShowHideName, self.showPiP, self.pipShown), "blue")
 				self.addExtension((self.getMoveName, self.movePiP, self.pipShown), "green")
@@ -1939,6 +1936,7 @@ class InfoBarPiP:
 			return _("Zap focus to main screen")
 		return _("Zap focus to Picture in Picture")
 
+
 	def togglePipzap(self):
 		if not self.session.pipshown:
 			self.showPiP()
@@ -1946,7 +1944,7 @@ class InfoBarPiP:
 		if slist and self.session.pipshown:
 			slist.togglePipzap()
 			if slist.dopipzap:
-				currentServicePath = slist.getCurrentServicePath()
+				currentServicePath = self.servicelist.getCurrentServicePath()
 				self.servicelist.setCurrentServicePath(self.session.pip.servicePath, doZap=False)
 				self.session.pip.servicePath = currentServicePath
 
@@ -1969,12 +1967,6 @@ class InfoBarPiP:
 				self.session.pipshown = False
 				del self.session.pip
 
-	def activePiP(self):
-		if self.session.pipshown:
-			self.togglePipzap()
-		else:
-			self.showPiP()
-
 	def swapPiP(self):
 		swapservice = self.session.nav.getCurrentlyPlayingServiceOrGroup()
 		pipref = self.session.pip.getCurrentService()
@@ -1982,7 +1974,6 @@ class InfoBarPiP:
 			currentServicePath = self.servicelist.getCurrentServicePath()
 			self.servicelist.setCurrentServicePath(self.session.pip.servicePath, doZap=False)
 			self.session.pip.playService(swapservice)
-			self.session.nav.stopService() # stop portal
 			self.session.nav.playService(pipref, checkParentalControl=False, adjust=False)
 			self.session.pip.servicePath = currentServicePath
 			if self.servicelist.dopipzap:
@@ -2269,13 +2260,13 @@ class InfoBarSubserviceSelection:
 		self.onClose.append(self.__removeNotifications)
 
 		self.bsel = None
+		
+		
 
 	def GreenPressed(self):
 		service = self.session.nav.getCurrentService()
 		subservices = service and service.subServices()
-		if fileExists('/usr/lib/enigma2/python/Plugins/Extensions/CustomSubservices/plugin.pyo'):
-                        self.subserviceSelection()
-                elif not subservices or subservices.getNumberOfSubservices() == 0:
+		if not subservices or subservices.getNumberOfSubservices() == 0:
 			try:
 				from Screens.PluginBrowser import PluginBrowser
 				self.session.open(PluginBrowser)
@@ -2416,11 +2407,16 @@ class InfoBarTimerButton:
 		self["TimerButtonActions"] = HelpableActionMap(self, "InfobarTimerButtonActions",
 			{
 				"timerSelection": (self.timerSelection, _("Timer selection...")),
+				"sleepTimerSelection": (self.sleepTimerSelection, _("Sleep Timer selection...")),
 			})
 
 	def timerSelection(self):
 		from Screens.TimerEdit import TimerEditList
 		self.session.open(TimerEditList)
+	
+	def sleepTimerSelection(self):
+		from Screens.SleepTimerEdit import SleepTimerEdit
+		self.session.open(SleepTimerEdit)
 
 class InfoBarVmodeButton:
 	def __init__(self):
@@ -3040,28 +3036,48 @@ class InfoBarPowersaver:
 		elif not Screens.Standby.inStandby:
 			print "[InfoBarPowersaver] goto standby"
 			self.session.open(Screens.Standby.Standby)
-class InfoBarHDMI:
+
+   
+
+class InfoBarHdmi:
 	def __init__(self):
+		self.hdmi_enabled = False
+		self.longbuttonpressed = False
 		self["HDMIActions"] = HelpableActionMap(self, "InfobarHDMIActions",
 			{
 				"HDMIin":(self.HDMIIn, _("Switch to HDMI in mode")),
+				"HDMIinLong":(self.HDMIInLong, _("Switch to HDMI in mode")),
 			}, prio=2)
 
+
 	def HDMIIn(self):
-		slist = self.servicelist
-		if slist.dopipzap:
-			curref = self.session.pip.getCurrentService()
-			if curref and curref.type != 8192:
-				self.session.pip.playService(eServiceReference('8192:0:1:0:0:0:0:0:0:0:'))
-			else:
-				self.session.pip.playService(slist.servicelist.getCurrent())
+		if self.longbuttonpressed:
+			self.longbuttonpressed = False
+			return
+		if not self.hdmi_enabled:
+			self.curserviceref = self.session.nav.getCurrentlyPlayingServiceOrGroup()
+			self.session.nav.stopService()
+			self.session.nav.playService(eServiceReference('8192:0:1:0:0:0:0:0:0:0:'))
+			self.hdmi_enabled = True
 		else:
-			curref = self.session.nav.getCurrentlyPlayingServiceOrGroup()
-			if curref and curref.type != 8192:
-				if curref and curref.type != -1 and os.path.splitext(curref.toString().split(":")[10])[1].lower() in AUDIO_EXTENSIONS.union(MOVIE_EXTENSIONS, DVD_EXTENSIONS):
-					setResumePoint(self.session)
-				self.session.nav.playService(eServiceReference('8192:0:1:0:0:0:0:0:0:0:'))
-			elif isStandardInfoBar(self):
-				self.session.nav.playService(slist.servicelist.getCurrent())
-			else:
-				self.session.nav.playService(self.cur_service)
+			self.session.nav.stopService()
+			self.session.nav.playService(self.curserviceref)
+			self.hdmi_enabled = False
+			self.curserviceref = None
+
+
+	def HDMIInLong(self):
+		self.longbuttonpressed = True
+		if not self.hdmi_enabled:
+			if self.session.pipshown:
+				del self.session.pip
+			self.session.pip = self.session.instantiateDialog(PictureInPicture)
+			self.session.pip.show()
+			if self.session.pip.playService(eServiceReference('8192:0:1:0:0:0:0:0:0:0:')):
+				self.session.pipshown = True
+			self.hdmi_enabled = True
+		else:
+			self.session.pipshown = False
+			del self.session.pip
+			self.hdmi_enabled = False
+

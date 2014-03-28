@@ -1,5 +1,5 @@
 from Components.Harddisk import harddiskmanager
-from config import ConfigSubsection, ConfigYesNo, config, ConfigSelection, ConfigText, ConfigNumber, ConfigSet, ConfigLocations, ConfigSelectionNumber, ConfigClock, ConfigSlider
+from config import ConfigSubsection, ConfigYesNo, config, ConfigSelection, ConfigText, ConfigNumber, ConfigSet, ConfigLocations, ConfigSelectionNumber, ConfigInteger, ConfigPassword, ConfigIP, ConfigClock, ConfigSlider
 from Tools.Directories import resolveFilename, SCOPE_HDD, defaultRecordingLocation
 from enigma import setTunerTypePriorityOrder, setPreferredTuner, setSpinnerOnOff, setEnableTtCachingOnOff;
 from enigma import Misc_Options, eEnv;
@@ -47,7 +47,7 @@ def InitUsageConfig():
 	config.usage.show_infobar_on_zap = ConfigYesNo(default = True)
 	config.usage.show_infobar_on_skip = ConfigYesNo(default = True)
 	config.usage.show_infobar_on_event_change = ConfigYesNo(default = False)
-	config.usage.show_second_infobar = ConfigSelection(default = None, choices = [(None, _("None")), ("0", _("No timeout"))] + choicelist + [("EPG",_("EPG"))]) 
+	config.usage.show_second_infobar = ConfigSelection(default = "5", choices = [(None, _("None")), ("0", _("No timeout"))] + choicelist + [("EPG",_("EPG"))]) 
 	config.usage.show_spinner = ConfigYesNo(default = True)
 	config.usage.enable_tt_caching = ConfigYesNo(default = True)
 	choicelist = []
@@ -75,6 +75,34 @@ def InitUsageConfig():
 	config.usage.timeshift_path = ConfigText(default = "/media/hdd/")
 	config.usage.allowed_timeshift_paths = ConfigLocations(default = ["/media/hdd/"])
 
+	config.cccaminfo = ConfigSubsection()
+	config.cccaminfo.showInExtensions = ConfigYesNo(default=False)
+	config.cccaminfo.serverNameLength = ConfigSelectionNumber(min = 10, max = 100, stepwidth = 1, default = 22, wraparound = True)
+	config.cccaminfo.name = ConfigText(default="Profile", fixed_size=False)
+	config.cccaminfo.ip = ConfigText(default="192.168.2.12", fixed_size=False)
+	config.cccaminfo.username = ConfigText(default="", fixed_size=False)
+	config.cccaminfo.password = ConfigText(default="", fixed_size=False)
+	config.cccaminfo.port = ConfigInteger(default=16001, limits=(1, 65535))
+	config.cccaminfo.profile = ConfigText(default="", fixed_size=False)
+	config.cccaminfo.ecmInfoEnabled = ConfigYesNo(default=True)
+	config.cccaminfo.ecmInfoTime = ConfigSelectionNumber(min = 1, max = 10, stepwidth = 1, default = 5, wraparound = True)
+	config.cccaminfo.ecmInfoForceHide = ConfigYesNo(default=True)
+	config.cccaminfo.ecmInfoPositionX = ConfigInteger(default=50)
+	config.cccaminfo.ecmInfoPositionY = ConfigInteger(default=50)
+	config.cccaminfo.blacklist = ConfigText(default="/media/cf/CCcamInfo.blacklisted", fixed_size=False)
+	config.cccaminfo.profiles = ConfigText(default="/media/cf/CCcamInfo.profiles", fixed_size=False)
+
+	config.oscaminfo = ConfigSubsection()
+	config.oscaminfo.showInExtensions = ConfigYesNo(default=False)
+	config.oscaminfo.userdatafromconf = ConfigYesNo(default = False)
+	config.oscaminfo.autoupdate = ConfigYesNo(default = False)
+	config.oscaminfo.username = ConfigText(default = "username", fixed_size = False, visible_width=12)
+	config.oscaminfo.password = ConfigPassword(default = "password", fixed_size = False)
+	config.oscaminfo.ip = ConfigIP( default = [ 127,0,0,1 ], auto_jump=True)
+	config.oscaminfo.port = ConfigInteger(default = 16002, limits=(0,65536) )
+	config.oscaminfo.intervall = ConfigSelectionNumber(min = 1, max = 600, stepwidth = 1, default = 10, wraparound = True)
+	SystemInfo["OScamInstalled"] = False
+
 	config.usage.movielist_trashcan = ConfigYesNo(default=True)
 	config.usage.movielist_trashcan_days = ConfigNumber(default=8)
 	config.usage.movielist_trashcan_reserve = ConfigNumber(default=40)
@@ -93,8 +121,6 @@ def InitUsageConfig():
 		("simple", _("Simple")),
 		("intermediate", _("Intermediate")),
 		("expert", _("Expert")) ])
-
-	config.usage.startup_to_standby = ConfigYesNo(default = False)
 
 	config.usage.on_long_powerpress = ConfigSelection(default = "show_menu", choices = [
 		("show_menu", _("Show shutdown menu")),
@@ -173,8 +199,8 @@ def InitUsageConfig():
 	nims = [("-1", _("auto"))]
 	for x in nimmanager.nim_slots:
 		nims.append((str(x.slot), x.getSlotName()))
-	config.usage.frontend_priority = ConfigSelection(default = "-1", choices = list(nims))
-	nims.insert(0,("-2", _("Disabled")))
+	config.usage.frontend_priority = ConfigSelection(default = "-1", choices = nims)
+	nims.append(("-2", _("Disabled")))
 	config.usage.recording_frontend_priority = ConfigSelection(default = "-2", choices = nims)
 	config.misc.disable_background_scan = ConfigYesNo(default = False)
 
@@ -219,8 +245,8 @@ def InitUsageConfig():
 		setPreferredTuner(int(configElement.value))
 	config.usage.frontend_priority.addNotifier(PreferredTunerChanged)
 
-	config.usage.hide_zap_errors = ConfigYesNo(default = False)
-	config.usage.hide_ci_messages = ConfigYesNo(default = False)
+	config.usage.hide_zap_errors = ConfigYesNo(default = True)
+	config.usage.hide_ci_messages = ConfigYesNo(default = True)
 	config.usage.show_cryptoinfo = ConfigYesNo(default = True)
 	config.usage.show_eit_nownext = ConfigYesNo(default = True)
 	config.usage.show_vcr_scart = ConfigYesNo(default = False)
@@ -460,7 +486,6 @@ def InitUsageConfig():
 	config.autolanguage.audio_autoselect3 = ConfigSelection(choices=audio_language_choices, default="---")
 	config.autolanguage.audio_autoselect4 = ConfigSelection(choices=audio_language_choices, default="---")
 	config.autolanguage.audio_defaultac3 = ConfigYesNo(default = False)
-	config.autolanguage.audio_defaultddp = ConfigYesNo(default = False)
 	config.autolanguage.audio_usecache = ConfigYesNo(default = True)
 
 	subtitle_language_choices = audio_language_choices[:1] + audio_language_choices [2:]
@@ -515,3 +540,4 @@ def preferredInstantRecordPath():
 
 def defaultMoviePath():
 	return defaultRecordingLocation(config.usage.default_path.value)
+

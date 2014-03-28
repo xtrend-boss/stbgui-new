@@ -1,4 +1,0 @@
-stbgui
-======
-
-STB GUI

@@ -9,7 +9,6 @@ class EventTime(Poll, Converter, object):
 	REMAINING = 2
 	PROGRESS = 3
 	DURATION = 4
-	RUNNING = 5
 
 	def __init__(self, type):
 		Converter.__init__(self, type)
@@ -28,12 +27,8 @@ class EventTime(Poll, Converter, object):
 			self.type = self.PROGRESS
 			self.poll_interval = 30*1000
 			self.poll_enabled = True
-		elif type == "Running":
-			self.type = self.RUNNING
-			self.poll_interval = 60*1000
-			self.poll_enabled = True
 		else:
-			raise ElementError("'%s' is not <StartTime|EndTime|Remaining|Duration|Progress|Running> for EventTime converter" % type)
+			raise ElementError("'%s' is not <StartTime|EndTime|Remaining|Duration|Progress> for EventTime converter" % type)
 
 	@cached
 	def getTime(self):

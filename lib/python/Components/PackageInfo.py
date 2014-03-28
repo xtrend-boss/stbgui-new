@@ -130,6 +130,7 @@ class PackageInfoHandler:
 	STATUS_INIT = 4
 
 	def __init__(self, statusCallback, blocking = False, neededTag = None, neededFlag = None):
+		self.hardware_info = HardwareInfo()
 		self.directory = "/"
 
 		self.neededTag = neededTag
@@ -269,7 +270,7 @@ class PackageInfoHandler:
 		if prerequisites.has_key("hardware"):
 			hardware_found = False
 			for hardware in prerequisites["hardware"]:
-				if hardware == HardwareInfo().device_name:
+				if hardware == self.hardware_info.device_name:
 					hardware_found = True
 			if not hardware_found:
 				return False

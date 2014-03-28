@@ -137,6 +137,13 @@ int main(int argc, char **argv)
 
 	gst_init(&argc, &argv);
 
+	printf("Version: %s\n", IMAGEVERSION);
+	printf("Build:   %s\n", IMAGEBUILD);
+	printf("Brand:   %s\n", MACHINE_BRAND);
+	printf("Boxtype: %s\n", BOXTYPE);
+	printf("Machine: %s\n", MACHINE_NAME);
+	printf("Drivers: %s\n", DRIVERDATE);
+
 	// set pythonpath if unset
 	setenv("PYTHONPATH", eEnv::resolve("${libdir}/enigma2/python").c_str(), 0);
 	printf("PYTHONPATH: %s\n", getenv("PYTHONPATH"));
@@ -314,6 +321,16 @@ void runMainloop()
 const char *getEnigmaVersionString()
 {
 	return enigma2_version;
+}
+
+const char *getImageVersionString()
+{
+	return IMAGEVERSION;
+}
+
+const char *getBuildVersionString()
+{
+	return IMAGEBUILD;
 }
 
 const char *getBoxType()

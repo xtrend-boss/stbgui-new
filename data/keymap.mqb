@@ -1,3 +1,4 @@
+<!-- ET-MultiQuickButton Keymap -->
 <keymap>
 	<map context="ListboxActions">
 		<device name="keyboard">
@@ -36,6 +37,7 @@
 
 	<map context="SetupActions">
 		<key id="KEY_ENTER" mapto="ok" flags="m" />
+		<key id="KEY_MENU" mapto="menu" flags="m" />
 		<key id="KEY_OK" mapto="ok" flags="m" />
 		<key id="KEY_EXIT" mapto="cancel" flags="m" />
 		<key id="KEY_ESC" mapto="cancel" flags="m" />
@@ -90,14 +92,14 @@
 	</map>
 
 	<map context="InfobarInstantRecord">
-		<key id="KEY_RECORD" mapto="instantRecord" flags="m" />
+		<key id="KEY_RECORD" mapto="instantRecord" flags="b" />
 		<device name="dreambox remote control (native)">
 			<key id="KEY_RED" mapto="instantRecord" flags="b" />
 		</device>
 	</map>
 
 	<map context="InfobarExtensions">
-		<key id="KEY_BLUE" mapto="xtapanel" flags="b" />
+		<key id="KEY_BLUE" mapto="Extraspanel" flags="b" />
                 <key id="KEY_BLUE" mapto="extensions" flags="l" /> 
 	</map>
 
@@ -106,16 +108,16 @@
 	</map>
 
 	<map context="InfobarChannelSelection">
-		<key id="KEY_LEFT" mapto="zapUp" flags="mr" />
-		<key id="KEY_RIGHT" mapto="zapDown" flags="mr" />
-		<key id="KEY_UP" mapto="switchChannelUp" flags="mr" />
-		<key id="KEY_DOWN" mapto="switchChannelDown" flags="mr" />
+		<key id="KEY_LEFT" mapto="openServiceList" flags="mr" />
+		<key id="KEY_RIGHT" mapto="openServiceList" flags="mr" />
+		<key id="KEY_UP" mapto="zapDown" flags="mr" />
+		<key id="KEY_DOWN" mapto="zapUp" flags="mr" />
 		<key id="KEY_PREVIOUS" mapto="historyBack" flags="mr" />
 		<key id="KEY_NEXT" mapto="historyNext" flags="mr" />
 		<key id="KEY_BACK" mapto="historyBack" flags="mr" />
 		<key id="KEY_FORWARD" mapto="historyNext" flags="mr" />
-		<key id="KEY_CHANNELUP" mapto="openServiceList" flags="m" />
-		<key id="KEY_CHANNELDOWN" mapto="openServiceList" flags="m" />
+		<key id="KEY_CHANNELUP" mapto="zapDown" flags="m" />
+		<key id="KEY_CHANNELDOWN" mapto="zapUp" flags="m" />
 		<key id="BTN_0" mapto="zapUp" flags="mr" />
 		<key id="BTN_1" mapto="zapDown" flags="mr" />
 	</map>
@@ -179,7 +181,7 @@
 	</map>
 	
 	<map context="InfobarMenuActions">
-		<key id="KEY_MENU" mapto="mainMenu" flags="mr" />
+		<key id="KEY_MENU" mapto="mainMenu" flags="b" />
 		<key id="KEY_SPACE" mapto="mainMenu" flags="mr" />
 	</map>
 	
@@ -196,22 +198,22 @@
 	</map>
 
 	<map context="InfobarActions">
-		<key id="KEY_VIDEO" mapto="showMovies" flags="m" />
-		<key id="KEY_RADIO" mapto="showRadio" flags="m" />
-		<key id="KEY_TV" mapto="showTv" flags="m" />
-		<key id="KEY_FILE" mapto="showMovies" flags="m" />
-		<key id="KEY_TEXT" mapto="showText" flags="m" />
+		<key id="KEY_VIDEO" mapto="showMovies" flags="b" />
+		<key id="KEY_RADIO" mapto="showRadio" flags="b" />
+		<key id="KEY_TV" mapto="showTv" flags="b" />
+		<key id="KEY_FILE" mapto="showMovies" flags="b" />
+		<key id="KEY_TEXT" mapto="showText" flags="b" />
 	</map>
 
 	<map context="InfobarAudioSelectionActions">
-		<key id="KEY_AUDIO" mapto="audioSelection" flags="m" />
+		<key id="KEY_AUDIO" mapto="audioSelection" flags="b" />
 		<device name="dreambox advanced remote control (native)">
 			<key id="KEY_YELLOW" mapto="audioSelection" flags="b" />
 		</device>
 	</map>
 
 	<map context="InfobarSubtitleSelectionActions">
-		<key id="KEY_SUBTITLE" mapto="subtitleSelection" flags="m" />
+		<key id="KEY_SUBTITLE" mapto="subtitleSelection" flags="b" />
 	</map>
 
 	<map context="InfobarSubserviceSelectionActions">
@@ -230,7 +232,7 @@
 	</map>
 
 	<map context="InfobarVmodeButtonActions">
-			<key id="KEY_VMODE" mapto="vmodeSelection" flags="m" />
+			<key id="KEY_VMODE" mapto="vmodeSelection" flags="b" />
 	</map>
 
 	<map context="InfobarPiPActions">
@@ -307,7 +309,7 @@
 			<key id="KEY_BLUE" mapto="seekFwdManual" flags="l" />
 		</device>
 		<key id="KEY_PLAYPAUSE" mapto="playpauseService" flags="m" />
-		<key id="KEY_PAUSE" mapto="pauseService" flags="m" />
+		<!--key id="KEY_PAUSE" mapto="pauseService" flags="m" /-->
 		<key id="KEY_PLAY" mapto="unPauseService" flags="m" />
 		<key id="KEY_REWIND" mapto="seekBack" flags="b" />
 		<key id="KEY_FASTFORWARD" mapto="seekFwd" flags="b" />
@@ -365,10 +367,10 @@
 		<device name="dreambox ir keyboard">
 			<key id="KEY_YELLOW" mapto="timeshiftStart" flags="m" />
 		</device>
-		<key id="KEY_PLAYPAUSE" mapto="timeshiftStart" flags="m" />
-		<key id="KEY_PAUSE" mapto="timeshiftStart" flags="m" />
-		<key id="KEY_STOP" mapto="timeshiftStop" flags="m" />
-		<key id="KEY_TIME" mapto="timeshiftStart" flags="m" />
+		<key id="KEY_PLAYPAUSE" mapto="timeshiftStart" flags="b" />
+		<!--key id="KEY_PAUSE" mapto="timeshiftStart" flags="m" /-->
+		<key id="KEY_STOP" mapto="timeshiftStop" flags="b" />
+		<key id="KEY_TIME" mapto="timeshiftStart" flags="b" />
 	</map>
 
 	<map context="InfobarTimeshiftActivateActions">
@@ -380,7 +382,7 @@
 			<key id="KEY_YELLOW" mapto="timeshiftActivateEndAndPause" flags="b" />
 		</device>
 		<key id="KEY_PLAYPAUSE" mapto="timeshiftActivateEndAndPause" flags="m" />
-		<key id="KEY_PAUSE" mapto="timeshiftActivateEndAndPause" flags="m" />
+		<!--key id="KEY_PAUSE" mapto="timeshiftActivateEndAndPause" flags="m" /-->
 		<key id="KEY_REWIND" mapto="timeshiftActivateEnd" flags="m" />
 	</map>
 
@@ -393,8 +395,8 @@
 	<map context="InfobarMovieListActions">
 		<key id="KEY_UP" mapto="up" flags="m" />
 		<key id="KEY_DOWN" mapto="down" flags="m" />
-		<key id="KEY_VIDEO" mapto="movieList" flags="m" />
-		<key id="KEY_FILE" mapto="movieList" flags="m" />
+		<key id="KEY_VIDEO" mapto="movieList" flags="b" />
+		<key id="KEY_FILE" mapto="movieList" flags="b" />
 	</map>
 
 	<map context="MoviePlayerActions">
@@ -445,11 +447,11 @@
 	</map>
 
 	<map context="VirtualKeyboardActions">
-		<key id="KEY_TEXT" mapto="showVirtualKeyboard" flags="m" />
+		<key id="KEY_TEXT" mapto="showVirtualKeyboard" flags="b" />
 	</map>
 	
 	<map context="InfobarTeletextActions">
-		<key id="KEY_TEXT" mapto="startTeletext" flags="m" />
+		<key id="KEY_TEXT" mapto="startTeletext" flags="b" />
 	</map>
 
 	<map context="TeletextActions">
@@ -473,7 +475,7 @@
 	</map>
 
 	<map context="InfobarRdsActions">
-		<key id="KEY_TEXT" mapto="startRassInteractive" flags="m" />
+		<key id="KEY_TEXT" mapto="startRassInteractive" flags="b" />
 	</map>
 
 	<map context="RassInteractiveActions">
@@ -509,8 +511,8 @@
 	</map>
 
 	<map context="TvRadioActions">
-		<key id="KEY_TV" mapto="keyTV" flags="m" />
-		<key id="KEY_RADIO" mapto="keyRadio" flags="m" />
+		<key id="KEY_TV" mapto="keyTV" flags="b" />
+		<key id="KEY_RADIO" mapto="keyRadio" flags="b" />
 	</map>
 
 	<map context="TimerEditActions">
@@ -613,7 +615,7 @@
 	</map>
 	
 	<map context="HelpActions">
-		<key id="KEY_HELP" mapto="displayHelp" flags="m" />
+		<key id="KEY_HELP" mapto="displayHelp" flags="b" />
 	</map>
 
 	<map context="ShortcutActions">

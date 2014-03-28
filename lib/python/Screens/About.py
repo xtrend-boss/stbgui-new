@@ -6,9 +6,17 @@ from Components.NimManager import nimmanager
 from Components.About import about
 from Components.ScrollLabel import ScrollLabel
 from Components.Button import Button
+from Tools.Downloader import downloadWithProgress
+from Components.ConfigList import ConfigListScreen
+from Components.config import config, ConfigSubsection, ConfigSelection, getConfigListEntry
+from Components.Label import Label
+import re
 
 from Tools.StbHardware import getFPVersion
 from enigma import eTimer
+
+config.CommitInfoSetup = ConfigSubsection()
+config.CommitInfoSetup.commiturl = ConfigSelection(default='Enigma2', choices=[('Enigma2', _('Source-Enigma2')), ('XTA', _('Skin-XTA')), ('TechniHD', _('Skin-TechniHD'))])
 
 class About(Screen):
 	def __init__(self, session):
@@ -77,7 +85,7 @@ class About(Screen):
 				"green": self.showTranslationInfo,
 				"up": self["AboutScrollLabel"].pageUp,
 				"down": self["AboutScrollLabel"].pageDown
-			})
+			}, -2)
 
 	def showTranslationInfo(self):
 		self.session.open(TranslationInfo)
@@ -118,45 +126,115 @@ class TranslationInfo(Screen):
 			{
 				"cancel": self.close,
 				"ok": self.close,
-			})
+			}, -2)
 
 class CommitInfo(Screen):
 	def __init__(self, session):
 		Screen.__init__(self, session)
 		self.skinName = ["CommitInfo", "About"]
 		self["AboutScrollLabel"] = ScrollLabel(_("Please wait"))
-
-		self["actions"] = ActionMap(["SetupActions", "DirectionActions"],
+                self["Commits"] = Label()
+		self["actions"] = ActionMap(["ColorActions", "OkCancelActions", "SetupActions", "DirectionActions"],
 			{
 				"cancel": self.close,
 				"ok": self.close,
+				"menu": self.keyMenu,
 				"up": self["AboutScrollLabel"].pageUp,
 				"down": self["AboutScrollLabel"].pageDown
-			})
+			}, -2)
 
 		self.Timer = eTimer()
-		self.Timer.callback.append(self.readCommitLogs)
+		self.Timer.callback.append(self.downloadWebSite)
 		self.Timer.start(50, True)
 
-	def readCommitLogs(self):
-		urls = [ 'http://sourceforge.net/p/openpli/enigma2/feed',
-			'http://sourceforge.net/p/openpli/openpli-oe-core/feed']
+	def downloadWebSite(self):
+                if config.CommitInfoSetup.commiturl.value == 'Enigma2':
+                        self["Commits"].setText("Enigma2")
+                        url = 'http://github.com/xtrend-boss/stbgui-new/commits/master'
+		elif config.CommitInfoSetup.commiturl.value == 'XTA':
+		        self["Commits"].setText("XTA")
+                        url = 'http://github.com/xtrend-alliance/xta/commits/master'
+                elif config.CommitInfoSetup.commiturl.value == 'TechniHD':
+                        self["Commits"].setText("TechniHD")
+                        url = 'http://github.com/xtrend-alliance/TechniHD/commits/master'
+		download = downloadWithProgress(url, '/tmp/.commits')
+		download.start().addCallback(self.download_finished).addErrback(self.download_failed)
+
+	def download_failed(self, failure_instance=None, error_message=""):
+		self["AboutScrollLabel"].setText(_("Currently the commit log cannot be retreived - please try later again"))
+
+	def download_finished(self, string=""):
 		commitlog = ""
-		from urllib2 import urlopen
 		try:
-			for url in urls:
-				commitlog += 80 * '-' + '\n'
-				commitlog += url.split('/')[-2] + '\n'
-				commitlog += 80 * '-' + '\n'
-				for x in  urlopen(url, timeout=5).read().split('<title>')[2:]:
-					for y in x.split("><"):
-						if '</title' in y:
-							title = y[:-7]
-						if '</dc:creator' in y:
-							creator = y.split('>')[1].split('<')[0]
-						if '</pubDate' in y:
-							date = y.split('>')[1].split('<')[0][:-6]
-					commitlog += date + ' ' + creator + '\n' + title + 2 * '\n'
+			for x in  "".join(open('/tmp/.commits', 'r').read().split('<li class="commit commit-group-item js-navigation-item js-details-container">')[1:]).split('<p class="commit-title  js-pjax-commit-title">'):
+				title = re.findall('class="message" data-pjax="true" title="(.*?)"', x, re.DOTALL)
+				author = re.findall('rel="author">(.*?)</', x)
+				date   = re.findall('<time class="js-relative-date" datetime=".*?" title="(.*?)">', x)
+				for t in title:
+					commitlog += t.strip().replace('&amp;', '&').replace('&quot;', '"').replace('&lt;', '\xc2\xab').replace('&gt;', '\xc2\xbb') + "\n"
+				for a in author:
+					commitlog += "Author: " + a.strip().replace('&lt;', '\xc2\xab').replace('&gt;', '\xc2\xbb') + "\n"
+				for d in date:
+					commitlog += d.strip() + "\n"
+				commitlog += 140*'-' + "\n"
 		except:
 			commitlog = _("Currently the commit log cannot be retreived - please try later again")
 		self["AboutScrollLabel"].setText(commitlog)
+	
+	def keyMenu(self):
+                self.session.open(CommitInfoSetup)
+
+        def showTranslationInfo(self):
+		self.session.open(TranslationInfo)
+
+	def showAbout(self):
+		self.session.open(About)
+
+class CommitInfoSetup(Screen, ConfigListScreen):
+        skin = """
+	    <screen position="c-300,c-250" size="600,200" title="XTA CommitInfoSetup">
+		    <widget name="config" position="25,25" scrollbarMode="showOnDemand" size="550,400" />
+		    <ePixmap pixmap="skin_default/buttons/red.png" position="20,e-45" size="140,40" alphatest="on" />
+		    <ePixmap pixmap="skin_default/buttons/green.png" position="160,e-45" size="140,40" alphatest="on" />
+		    <widget source="key_red" render="Label" position="20,e-45" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#9f1313" transparent="1" />
+		    <widget source="key_green" render="Label" position="160,e-45" zPosition="1" size="140,40" font="Regular;20" halign="center" valign="center" backgroundColor="#1f771f" transparent="1" />
+	    </screen>"""
+	    
+        def __init__(self, session):
+                self.skin = CommitInfoSetup.skin
+                Screen.__init__(self, session)
+                self['key_red'] = StaticText(_('Cancel'))
+                self['key_green'] = StaticText(_('OK'))
+                self['actions'] = ActionMap(['SetupActions', 'ColorActions', 'EPGSelectActions', 'NumberActions'], 
+                {'ok': self.keyGo,
+                 'left': self.keyLeft,
+                 'right': self.keyRight,
+                 'save': self.keyGo,
+                 'cancel': self.keyCancel,
+                 'green': self.keyGo,
+                 'red': self.keyCancel}, -2)
+                  
+                self.list = []
+                ConfigListScreen.__init__(self, self.list, session=self.session)
+                self.list.append(getConfigListEntry(_('Select CommitInfo Log'), config.CommitInfoSetup.commiturl))
+                self['config'].list = self.list
+                self['config'].l.setList(self.list)
+        
+        def keyLeft(self):
+                ConfigListScreen.keyLeft(self)
+
+        def keyRight(self):
+                ConfigListScreen.keyRight(self)
+        
+        def keyGo(self):
+                for x in self['config'].list:
+                        x[1].save()
+                        
+                self.close()
+                 
+        def keyCancel(self):
+                for x in self['config'].list:
+                        x[1].cancel()
+
+                self.close()
+         

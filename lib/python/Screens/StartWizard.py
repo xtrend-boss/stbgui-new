@@ -1,7 +1,6 @@
 from Wizard import wizardManager
 from Screens.WizardLanguage import WizardLanguage
 from Screens.Rc import Rc
-from Tools.HardwareInfo import HardwareInfo
 
 from Components.Pixmap import Pixmap, MovingPixmap, MultiPixmap
 from Components.config import config, ConfigBoolean, configfile, ConfigSubsection
@@ -20,7 +19,12 @@ class StartWizard(WizardLanguage, Rc):
 
 	def markDone(self):
 		# setup remote control, all stb have same settings except dm8000 which uses a different settings
-		if HardwareInfo().get_device_name() == 'dm8000':
+		import os
+		boxType = ''
+		if os.path.isfile("/proc/stb/info/model"):
+			boxType = open("/proc/stb/info/model").read().strip().lower()
+
+		if 'dm8000' in boxType:
 			config.misc.rcused.value = 0
 		else:
 			config.misc.rcused.value = 1
@@ -30,5 +34,5 @@ class StartWizard(WizardLanguage, Rc):
 		config.misc.firstrun.save()
 		configfile.save()
 
-wizardManager.registerWizard(LanguageWizard, config.misc.languageselected.value, priority = 5)
+wizardManager.registerWizard(LanguageWizard, config.misc.languageselected.value, priority = 2)
 wizardManager.registerWizard(StartWizard, config.misc.firstrun.value, priority = 20)

@@ -47,7 +47,8 @@ def InitUsageConfig():
 	config.usage.show_infobar_on_zap = ConfigYesNo(default = True)
 	config.usage.show_infobar_on_skip = ConfigYesNo(default = True)
 	config.usage.show_infobar_on_event_change = ConfigYesNo(default = False)
-	config.usage.show_second_infobar = ConfigSelection(default = "5", choices = [(None, _("None")), ("0", _("No timeout"))] + choicelist + [("EPG",_("EPG"))]) 
+	config.usage.show_second_infobar = ConfigSelection(default = "5", choices = [(None, _("None")), ("0", _("No timeout"))] + choicelist + [("EPG",_("EPG"))])
+	config.usage.infobar_frontend_source = ConfigSelection(default = "tuner", choices = [("settings", _("Settings")), ("tuner", _("Tuner"))])
 	config.usage.show_spinner = ConfigYesNo(default = True)
 	config.usage.enable_tt_caching = ConfigYesNo(default = True)
 	choicelist = []
@@ -247,8 +248,8 @@ def InitUsageConfig():
 		setPreferredTuner(int(configElement.value))
 	config.usage.frontend_priority.addNotifier(PreferredTunerChanged)
 
-	config.usage.hide_zap_errors = ConfigYesNo(default = True)
-	config.usage.hide_ci_messages = ConfigYesNo(default = True)
+	config.usage.hide_zap_errors = ConfigYesNo(default = False)
+	config.usage.hide_ci_messages = ConfigYesNo(default = False)
 	config.usage.show_cryptoinfo = ConfigYesNo(default = True)
 	config.usage.show_eit_nownext = ConfigYesNo(default = True)
 	config.usage.show_vcr_scart = ConfigYesNo(default = False)
@@ -543,4 +544,3 @@ def preferredInstantRecordPath():
 
 def defaultMoviePath():
 	return defaultRecordingLocation(config.usage.default_path.value)
-

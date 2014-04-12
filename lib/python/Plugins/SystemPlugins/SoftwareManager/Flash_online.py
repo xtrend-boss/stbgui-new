@@ -21,16 +21,16 @@ from boxbranding import getImageDistro, getMachineBrand, getMachineName
 distro = getImageDistro()
 
 #############################################################################################################
-image = 0 # 0=openATV / 1=openMips / 2=XTA
+image = 2 # 0=openATV / 1=openMips / 2=xtrendalliance
 if distro.lower() == "openmips":
 	image = 1
 elif distro.lower() == "openatv":
 	image = 0
-elif distro.lower() == "xta":
+elif distro.lower() == "xtrendalliance":
 	image = 2
 feedurl_atv = 'http://images.mynonpublic.com/openatv/nightly'
 feedurl_om = 'http://image.openmips.com/2.0'
-feedurl_xta = 'http://image.xtrend-support-source.com/image-alliance'
+feedurl_xta = 'http://image.xtrend-support-source.com/image-alliance/xta4'
 imagePath = '/hdd/images'
 flashPath = '/hdd/images/flash'
 flashTmp = '/hdd/images/tmp'
@@ -345,9 +345,9 @@ class doFlashImage(Screen):
 					self.feedurl = feedurl_om
 					self["key_blue"].setText("openATV")
 			elif image == 2:
-				if self.feed == "xta":
+				if self.feed == "xtrendalliance":
 					self.feedurl = feedurl_xta
-					self["key_blue"].setText("openATV")
+					self["key_blue"].setText("XtrendAlliance")
 				else:
 					self.feedurl = feedurl_atv
 					self["key_blue"].setText("XTA")

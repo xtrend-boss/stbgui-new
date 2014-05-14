@@ -1138,6 +1138,9 @@ class MovieSelection(Screen, HelpableScreen, SelectionEventInfo, InfoBarBase):
 			self._updateButtonTexts()
 			self.reloadList()
 
+	def can_sortby(self, item):
+		return True
+
 	def do_sortby(self):
 		self.selectSortby()
 
@@ -1850,6 +1853,9 @@ class MovieSelection(Screen, HelpableScreen, SelectionEventInfo, InfoBarBase):
 		self["movie_sort"].setPixmapNum(int(config.movielist.moviesort.value)-1)
 		self["movie_sort"].show()
 
+	def can_movieoff(self, item):
+		return True
+
 	def do_movieoff(self):
 		self.setNextMovieOffStatus()
 		self.displayMovieOffStatus()
@@ -1863,6 +1869,9 @@ class MovieSelection(Screen, HelpableScreen, SelectionEventInfo, InfoBarBase):
 		self.settings["movieoff"] = config.usage.on_movie_eof.value
 		if config.movielist.settings_per_directory.value:
 			self.saveLocalSettings()
+
+	def can_movieoff_menu(self, item):
+		return True
 
 	def do_movieoff_menu(self):
 		current_movie_eof = config.usage.on_movie_eof.value

@@ -55,7 +55,7 @@ void eStreamClient::notifier(int what)
 				if (request.substr(0, 5) == "GET /")
 				{
 					size_t pos;
-					if (eConfigManager::getConfigBoolValue("config.OpenWebif.auth"))
+					if (eConfigManager::getConfigBoolValue("config.OpenWebif.auth_for_streaming"))
 					{
 						bool authenticated = false;
 						if ((pos = request.find("Authorization: Basic ")) != std::string::npos)
@@ -97,6 +97,7 @@ void eStreamClient::notifier(int what)
 									if (pwdresult)
 									{
 										struct crypt_data cryptdata;
+										cryptdata.initialized = 0;
 										crypt = pwd.pw_passwd;
 										if (crypt == "*" || crypt == "x")
 										{

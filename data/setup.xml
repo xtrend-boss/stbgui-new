@@ -22,7 +22,6 @@
 		<item level="2" text="Require authentication for http streams" description="When enabled, authentication is required to watch http streams.">config.streaming.authentication</item>
 		<item level="2" text="Fan operation" description="Configure how the fan should operate" requires="Fan">config.usage.fan</item>
 		<item level="2" text="Fan speed" description="Configure the speed of the fan" requires="FanPWM">config.usage.fanspeed</item>
-		<item level="2" text="Wake On LAN" description="When enabled the set top box is able to wakeup on LAN" requires="WakeOnLAN">config.usage.wakeOnLAN</item>
 		<item level="2" text="Startup to Standby" description="Startup the set top box in standby">config.usage.startup_to_standby</item>
 	</setup>
 	<setup key="userinterface" title="User interface">
@@ -69,6 +68,7 @@
 		<item level="2" text="Enable freesat EPG" description="Use FreeSat EPG information when it is available.">config.epg.freesat</item>
 		<item level="2" text="Enable ViaSat EPG" description="Use ViaSat EPG information when it is available.">config.epg.viasat</item>
 		<item level="2" text="Enable Netmed EPG" description="Use Netmed EPG information when it is available.">config.epg.netmed</item>
+		<item level="2" text="Enable Virgin EPG" description="Use Virgin EPG information when it is available.">config.epg.virgin</item>
 		<item level="2" text="Maintain old EPG data for" description="Configure for how many minutes finished events should remain visible in the EPG. Useful when you need information about an event which has just finished, or has been delayed.">config.epg.histminutes</item>
 	</setup>
 	<setup key="subtitlesetup" title="Subtitle settings">

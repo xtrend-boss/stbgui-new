@@ -107,16 +107,16 @@
 	</map>
 
 	<map context="InfobarChannelSelection">
-		<key id="KEY_LEFT" mapto="zapUp" flags="mr" />
-		<key id="KEY_RIGHT" mapto="zapDown" flags="mr" />
-		<key id="KEY_UP" mapto="switchChannelUp" flags="mr" />
-		<key id="KEY_DOWN" mapto="switchChannelDown" flags="mr" />
+		<key id="KEY_LEFT" mapto="keyLeft" flags="mr" />
+		<key id="KEY_RIGHT" mapto="keyRight" flags="mr" />
+		<key id="KEY_UP" mapto="keyUp" flags="mr" />
+		<key id="KEY_DOWN" mapto="keyDown" flags="mr" />
 		<key id="KEY_PREVIOUS" mapto="historyBack" flags="mr" />
 		<key id="KEY_NEXT" mapto="historyNext" flags="mr" />
 		<key id="KEY_BACK" mapto="historyBack" flags="mr" />
 		<key id="KEY_FORWARD" mapto="historyNext" flags="mr" />
-		<key id="KEY_CHANNELUP" mapto="openServiceList" flags="m" />
-		<key id="KEY_CHANNELDOWN" mapto="openServiceList" flags="m" />
+		<key id="KEY_CHANNELUP" mapto="keyChannelUp" flags="m" />
+		<key id="KEY_CHANNELDOWN" mapto="keyChannelDown" flags="m" />
 		<key id="BTN_0" mapto="zapUp" flags="mr" />
 		<key id="BTN_1" mapto="zapDown" flags="mr" />
 	</map>
@@ -322,7 +322,7 @@
 			<key id="KEY_RIGHT" mapto="seekFwd" flags="m" />
 		</device>
 
-		<key id="KEY_OK" mapto="unPauseService" flags="m" />
+		<key id="KEY_OK" mapto="okButton" flags="m" />
 
 		<key id="KEY_1" mapto="seekdef:1" flags="m" />
 		<key id="KEY_3" mapto="seekdef:3" flags="m" />
@@ -497,6 +497,8 @@
 		<key id="KEY_NEXT" mapto="nextMarker" flags="m" />
 		<key id="KEY_BACK" mapto="prevMarker" flags="m" />
 		<key id="KEY_FORWARD" mapto="nextMarker" flags="m" />
+		<key id="KEY_LEFT" mapto="keyLeft" flags="m" />
+		<key id="KEY_RIGHT" mapto="keyRight" flags="m" />
 	</map>
 
 	<map context="ChannelSelectEPGActions">
@@ -591,6 +593,9 @@
 		<key id="KEY_SUBTITLE" mapto="yellow" flags="m" />
 		<key id="KEY_YELLOW" mapto="yellow" flags="m" />
 		<key id="KEY_BLUE" mapto="blue" flags="m" />
+		<key id="KEY_CHANNELUP" mapto="volumeUp" flags="m" />
+		<key id="KEY_CHANNELDOWN" mapto="volumeDown" flags="m" />
+		<key id="KEY_MUTE" mapto="volumeMute" flags="m" />
 	</map>
 
 	<map context="ColorActions">

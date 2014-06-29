@@ -883,6 +883,8 @@ class ChannelSelectionBase(Screen):
 				"nextMarker": self.nextMarker,
 				"prevMarker": self.prevMarker,
 				"gotAsciiCode": self.keyAsciiCode,
+				"keyLeft": self.keyLeft,
+				"keyRight": self.keyRight,
 				"1": self.keyNumberGlobal,
 				"2": self.keyNumberGlobal,
 				"3": self.keyNumberGlobal,
@@ -893,7 +895,7 @@ class ChannelSelectionBase(Screen):
 				"8": self.keyNumberGlobal,
 				"9": self.keyNumberGlobal,
 				"0": self.keyNumber0
-			})
+			}, -2)
 		self.maintitle = _("Channel selection")
 		self.recallBouquetMode()
 
@@ -1187,16 +1189,32 @@ class ChannelSelectionBase(Screen):
 		return self.servicelist.atEnd()
 
 	def nextBouquet(self):
-		if "reverseB" in config.usage.servicelist_cursor_behavior.value:
+		if config.usage.oldstyle_zap_controls.value:
+			self.servicelist.instance.moveSelection(self.servicelist.instance.pageUp)
+		elif "reverseB" in config.usage.servicelist_cursor_behavior.value:
 			self.changeBouquet(-1)
 		else:
 			self.changeBouquet(+1)
 
 	def prevBouquet(self):
-		if "reverseB" in config.usage.servicelist_cursor_behavior.value:
+		if config.usage.oldstyle_zap_controls.value:
+			self.servicelist.instance.moveSelection(self.servicelist.instance.pageDown)
+		elif "reverseB" in config.usage.servicelist_cursor_behavior.value:
 			self.changeBouquet(+1)
 		else:
 			self.changeBouquet(-1)
+
+	def keyLeft(self):
+		if config.usage.oldstyle_zap_controls.value:
+			self.changeBouquet(-1)
+		else:
+			self.servicelist.instance.moveSelection(self.servicelist.instance.pageUp)
+
+	def keyRight(self):
+		if config.usage.oldstyle_zap_controls.value:
+			self.changeBouquet(+1)
+		else:
+			self.servicelist.instance.moveSelection(self.servicelist.instance.pageDown)
 
 	def showFavourites(self):
 		if not self.pathChangeDisabled:
@@ -1406,6 +1424,7 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 		self.lastChannelRootTimer = eTimer()
 		self.lastChannelRootTimer.callback.append(self.__onCreate)
 		self.lastChannelRootTimer.start(100,True)
+		self.pipzaptimer = eTimer()
 
 	def asciiOn(self):
 		rcinput = eRCInput.getInstance()
@@ -1517,7 +1536,7 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 			title = title[:pos]
 		if self.dopipzap:
 			# Mark PiP as inactive and effectively deactivate pipzap
-			self.session.pip.inactive()
+			self.hidePipzapMessage()
 			self.dopipzap = False
 
 			# Disable PiP if not playing a service
@@ -1533,7 +1552,7 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 			title += _(" (TV)")
 		else:
 			# Mark PiP as active and effectively active pipzap
-			self.session.pip.active()
+			self.showPipzapMessage()
 			self.dopipzap = True
 			self.__evServiceStart()
 			# Move to service playing in pip (will not work with subservices)
@@ -1542,6 +1561,19 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 			title += _(" (PiP)")
 		self.setTitle(title)
 		self.buildTitleString()
+
+	def showPipzapMessage(self):
+		time = config.usage.infobar_timeout.index
+		if time:
+			self.pipzaptimer.callback.append(self.hidePipzapMessage)
+			self.pipzaptimer.startLongTimer(time)
+		self.session.pip.active()
+
+	def hidePipzapMessage(self):
+		if self.pipzaptimer.isActive():
+			self.pipzaptimer.callback.remove(self.hidePipzapMessage)
+			self.pipzaptimer.stop()
+		self.session.pip.inactive()
 
 	#called from infoBar and channelSelected
 	def zap(self, enable_pipzap=False, preview_zap=False, checkParentalControl=True, ref=None):
@@ -1555,6 +1587,7 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 				if nref and (not checkParentalControl or Components.ParentalControl.parentalControl.isServicePlayable(nref, boundFunction(self.zap, enable_pipzap=True, checkParentalControl=False))):
 					self.session.pip.playService(nref)
 					self.__evServiceStart()
+					self.showPipzapMessage()
 				else:
 					self.setStartRoot(self.curRoot)
 					self.setCurrentSelection(ref)

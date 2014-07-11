@@ -187,7 +187,7 @@ class InfoBarScreenSaver:
 		flag = self.seekstate[0]
 		if not flag:
 			ref = self.session.nav.getCurrentlyPlayingServiceOrGroup()
-			if ref:
+			if ref and not (hasattr(self.session, "pipshown") and self.session.pipshown):
 				ref = ref.toString().split(":")
 				flag = ref[2] == "2" or os.path.splitext(ref[10])[1].lower() in AUDIO_EXTENSIONS
 		if time and flag:
@@ -1371,10 +1371,12 @@ class InfoBarSeek:
 			self.pauseService()
 
 	def okButton(self):
-		if self.seekstate == self.SEEK_STATE_PAUSE:
+		if self.seekstate == self.SEEK_STATE_PLAY:
+			return 0
+		elif self.seekstate == self.SEEK_STATE_PAUSE:
 			self.pauseService()
 		else:
-			return 0
+			self.unPauseService()
 
 	def pauseService(self):
 		if self.seekstate == self.SEEK_STATE_PAUSE:
@@ -1595,21 +1597,32 @@ class InfoBarPVRState:
 		else:
 			self._mayShow()
 
+class TimeshiftLive(Screen):
+	def __init__(self, session):
+		Screen.__init__(self, session)
+
 class InfoBarTimeshiftState(InfoBarPVRState):
 	def __init__(self):
 		InfoBarPVRState.__init__(self, screen=TimeshiftState, force_show = True)
+		self.timeshiftLiveScreen = self.session.instantiateDialog(TimeshiftLive)
+		self.timeshiftLiveScreen.hide()
 		self.__hideTimer = eTimer()
 		self.__hideTimer.callback.append(self.__hideTimeshiftState)
 
 	def _mayShow(self):
-		#if self.shown and self.timeshiftEnabled():
-		if self.shown and self.seekstate != self.SEEK_STATE_PLAY and self.timeshiftEnabled():
-			self.pvrStateDialog.show()
-			if self.seekstate == self.SEEK_STATE_PLAY and not self.shown:
-				self.__hideTimer.start(5*1000, True)
+		if self.shown and self.timeshiftEnabled():
+			if self.timeshiftActivated():
+				self.pvrStateDialog.show()
+				self.timeshiftLiveScreen.hide()
+			else:
+				self.pvrStateDialog.hide()
+				self.timeshiftLiveScreen.show()
+			if self.seekstate == self.SEEK_STATE_PLAY:
+				self.__hideTimer.startLongTimer(5)
 
 	def __hideTimeshiftState(self):
 		self.pvrStateDialog.hide()
+		self.timeshiftLiveScreen.hide()
 
 class InfoBarShowMovies:
 
@@ -1687,6 +1700,10 @@ class InfoBarTimeshift:
 	def timeshiftEnabled(self):
 		ts = self.getTimeshift()
 		return ts and ts.isTimeshiftEnabled()
+
+	def timeshiftActivated(self):
+		ts = self.getTimeshift()
+		return ts and ts.isTimeshiftActive()
 
 	def startTimeshift(self, pauseService = True):
 		print "enable timeshift"
@@ -1880,7 +1897,7 @@ class InfoBarExtensions:
 
 		self["InstantExtensionsActions"] = HelpableActionMap(self, "InfobarExtensions",
 			{
-				"extensions": (self.showExtensionSelection, _("view extensions...")),
+				"extensions": (self.showExtensionSelection, _("Show extensions...")),
 				"xtapanel": (self.ct, _("open xta panel...")),
 			}, 1) # lower priority
         def ct(self):
@@ -2070,6 +2087,8 @@ class InfoBarPiP:
 						self.lastPiPServiceTimeoutTimer.startLongTimer(lastPiPServiceTimeout)
 				del self.session.pip
 				self.session.pipshown = False
+			if hasattr(self, "ScreenSaverTimerStart"):
+				self.ScreenSaverTimerStart()
 		else:
 			self.session.pip = self.session.instantiateDialog(PictureInPicture)
 			self.session.pip.show()
@@ -2085,6 +2104,8 @@ class InfoBarPiP:
 				else:
 					self.session.pipshown = False
 					del self.session.pip
+			if self.session.pipshown and hasattr(self, "screenSaverTimer"):
+				self.screenSaverTimer.stop()
 			self.lastPiPService = None
 
 	def clearLastPiPService(self):

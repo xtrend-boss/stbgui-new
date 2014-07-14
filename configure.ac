@@ -58,13 +58,13 @@ AC_DEFINE_UNQUOTED(BOXTYPE,"$BOXTYPE",[box type])
 
 AC_ARG_WITH(machinebrand,
 	[  --with-machinebrand=NAME brand name [[Vu,Xtrend,...]]],
-	[MACHINE_BRAND="$withval"],[MACHINE_BRAND="Vu+"])
+	[MACHINE_BRAND="$withval"],[MACHINE_BRAND="Xtrend"])
 AC_SUBST(MACHINE_BRAND)
 AC_DEFINE_UNQUOTED(MACHINE_BRAND,"$MACHINE_BRAND",[machine brand])
 
 AC_ARG_WITH(machinename,
 	[  --with-machinename=NAME machine name [[Solo,Ultimo,...]]],
-	[MACHINE_NAME="$withval"],[MACHINE_NAME="Ultimo"])
+	[MACHINE_NAME="$withval"],[MACHINE_NAME="et9x00"])
 AC_SUBST(MACHINE_NAME)
 AC_DEFINE_UNQUOTED(MACHINE_NAME,"$MACHINE_NAME",[machine name])
 

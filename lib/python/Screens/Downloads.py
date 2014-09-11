@@ -169,8 +169,9 @@ class Getipklist(Screen):
 
 
 
-#    def __init__(self, session, addon):
-    def __init__(self, session):
+    def __init__(self, session, addon):
+#    def __init__(self, session):
+		self.addon = addon
 
 		self.skin = Getipklist.skin
 		Screen.__init__(self, session)
@@ -202,7 +203,7 @@ class Getipklist(Screen):
     def openTest(self):
                 self["info"].setText("Downloading list...")
                 testno = 1
-                
+
                 xurl = "http://www.et-view-support.com/addons/XTA-team/" + self.addon + "/list.txt"
                 print "xurl =", xurl
                 getPage(xurl).addCallback(self.gotPage).addErrback(self.getfeedError)
@@ -252,8 +253,8 @@ class Getipklist(Screen):
 	        sel = self["list"].getSelectionIndex()
                 ipk = self.data[sel]
 #                addon = self.addon
-#                ipkinst = Getipk(self.session, ipk, addon) 
-                ipkinst = Getipk(self.session, ipk) 
+                ipkinst = Getipk(self.session, ipk, self.addon) 
+ #               ipkinst = Getipk(self.session, ipk) 
                 ipkinst.openTest()
                 
     def keyLeft(self):
@@ -285,8 +286,9 @@ class Getipk(Screen):
 	                <widget name="key_blue" position="420,450" size="140,50" valign="center" halign="center" zPosition="4"  foregroundColor="#ffffff" font="Regular;20" transparent="1" shadowColor="#25062748" shadowOffset="-2,-2" /-->
                 </screen>"""
  
-#    def __init__(self, session, ipk, addon):
-    def __init__(self, session, ipk):
+    def __init__(self, session, ipk, addon):
+#    def __init__(self, session, ipk):
+		self.addon = addon
 		Screen.__init__(self, session)
                 self.skin = Getipk.skin
                 title = "Addon Install"

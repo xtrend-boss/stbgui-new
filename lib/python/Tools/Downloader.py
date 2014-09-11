@@ -1,10 +1,12 @@
+from boxbranding import getMachineBrand, getMachineName
+
 from twisted.web import client
 from twisted.internet import reactor, defer, ssl
-from twisted.python import failure
+
 
 class HTTPProgressDownloader(client.HTTPDownloader):
 	def __init__(self, url, outfile, headers=None):
-		client.HTTPDownloader.__init__(self, url, outfile, headers=headers, agent="STB HTTP Downloader")
+		client.HTTPDownloader.__init__(self, url, outfile, headers=headers, agent="%s %s HTTP Downloader" % (getMachineBrand(), getMachineName()))
 		self.status = None
 		self.progress_callback = None
 		self.deferred = defer.Deferred()
@@ -37,7 +39,16 @@ class HTTPProgressDownloader(client.HTTPDownloader):
 
 class downloadWithProgress:
 	def __init__(self, url, outputfile, contextFactory=None, *args, **kwargs):
-		scheme, host, port, path = client._parse(url)
+		if hasattr(client, '_parse'):
+			scheme, host, port, path = client._parse(url)
+		else:
+			from twisted.web.client import _URI
+			uri = _URI.fromBytes(url)
+			scheme = uri.scheme
+			host = uri.host
+			port = uri.port
+			path = uri.path
+
 		self.factory = HTTPProgressDownloader(url, outputfile, *args, **kwargs)
 		if scheme == "https":
 			self.connection = reactor.connectSSL(host, port, self.factory, ssl.ClientContextFactory())

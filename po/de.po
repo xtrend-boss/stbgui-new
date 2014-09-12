@@ -3,16 +3,34 @@ msgstr ""
 "Project-Id-Version: enigma2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-07-21 19:08+0200\n"
-"PO-Revision-Date: 2014-07-24 11:35+0100\n"
-"Last-Translator: daddelfalk <OpenPLi>\n"
-"Language-Team: OpenPLi <openpli.org>\n"
+"PO-Revision-Date: 2014-09-18 11:55+0100\n"
+"Last-Translator: edcrane\n"
+"Language-Team: \n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Poedit 1.6.7\n"
+"X-Generator: Poedit 1.6.9\n"
 "X-Poedit-SourceCharset: utf-8\n"
+
+msgid "Press Menu for more options"
+msgstr "Drücke Menu für mehr Optionen"
+
+msgid "Sleeptimer (not activated)"
+msgstr "Sleeptimer (nicht aktiviert)"
+
+msgid "Alternative radio mode"
+msgstr "Alternativer Radio-Modus"
+
+msgid "Red colored"
+msgstr "Rot gefärbt"
+
+msgid "Show record indicator"
+msgstr "Zeige Aufnahmeanzeige"
+
+msgid "Config resolution of pictures"
+msgstr "Auflösung von Bildern"
 
 msgid ""
 "\n"

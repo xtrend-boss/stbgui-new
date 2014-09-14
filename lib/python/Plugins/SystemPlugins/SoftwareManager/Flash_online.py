@@ -22,15 +22,8 @@ distro = getImageDistro()
 
 #############################################################################################################
 image = 2 # 0=openATV / 1=openMips / 2=xtrendalliance
-if distro.lower() == "openmips":
-	image = 1
-elif distro.lower() == "openatv":
-	image = 0
-elif distro.lower() == "xtrendalliance":
-	image = 2
-feedurl_atv = 'http://images.mynonpublic.com/openatv/nightly'
-feedurl_om = 'http://image.openmips.com/2.0'
-feedurl_xta = 'http://image.xtrend-support-source.com/image-alliance/xta4'
+#feedurl_xta = 'http://image.xtrend-support-source.com/image-alliance/xta4'
+feedurl_xta = 'http://beta.xtrend-support-source.com/'
 imagePath = '/hdd/images'
 flashPath = '/hdd/images/flash'
 flashTmp = '/hdd/images/tmp'
@@ -143,13 +136,8 @@ class doFlashImage(Screen):
 		self.simulate = False
 		self.Online = online
 		self.imagePath = imagePath
-		self.feedurl = feedurl_atv
-		if image == 0:
-			self.feed = "atv"
-		elif image == 1:
-			self.feed = "om"
-		elif image == 2:
-			self.feed = "xta"
+		self.feedurl = feedurl_xta
+		self.feed = "xta"
 		self["imageList"] = MenuList(self.imagelist)
 		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], 
 		{
@@ -167,16 +155,7 @@ class doFlashImage(Screen):
 		
 	def blue(self):
 		if self.Online:
-			if image == 1:
-				if self.feed == "atv":
-					self.feed = "om"
-				else:
-					self.feed = "atv"
-			if image == 2:
-				if self.feed == "atv":
-					self.feed = "xta"
-				else:
-					self.feed = "atv"
+			self.feed = "xta"
 			self.layoutFinished()
 			return
 		sel = self["imageList"].l.getCurrentSelection()
@@ -195,18 +174,6 @@ class doFlashImage(Screen):
 		
 	def box(self):
 		box = getBoxType()
-		if image != 2:
-			machinename = getMachineName()
-			if box == 'odinm6':
-				box = getMachineName().lower()
-			elif box == "inihde" and machinename.lower() == "xpeedlx":
-				box = "xpeedlx"
-			elif box == "inihde" and machinename.lower() == "hd-1000":
-				box = "sezam-1000hd"
-			elif box == "ventonhdx" and machinename.lower() == "hd-5000":
-				box = "sezam-5000hd"
-			elif box == "ventonhdx" and machinename.lower() == "premium twin":
-				box = "miraclebox-twin"
 		return box
 
 	def green(self):
@@ -337,24 +304,8 @@ class doFlashImage(Screen):
 		self.imagelist = []
 		if self.Online:
 			self["key_yellow"].setText("")
-			if image == 1:
-				if self.feed == "atv":
-					self.feedurl = feedurl_atv
-					self["key_blue"].setText("openMIPS")
-				else:
-					self.feedurl = feedurl_om
-					self["key_blue"].setText("openATV")
-			elif image == 2:
-				if self.feed == "xtrendalliance":
-					self.feedurl = feedurl_xta
-					self["key_blue"].setText("XtrendAlliance")
-				else:
-					self.feedurl = feedurl_atv
-					self["key_blue"].setText("XTA")
-			else:
-				self.feedurl = feedurl_atv
-				self["key_blue"].setText("")
-			url = '%s/index.php?open=%s' % (self.feedurl,box)
+			self.feedurl = feedurl_xta
+			url = '%sindex.php?open=%s' % (self.feedurl,box)
 			req = urllib2.Request(url)
 			try:
 				response = urllib2.urlopen(req)
@@ -374,10 +325,10 @@ class doFlashImage(Screen):
 			for line in lines:
 				if line.find("<a href='%s/" % box) > -1:
 					t = line.find("<a href='%s/" % box)
-					if self.feed == "atv" or self.feed == "xta":
-						self.imagelist.append(line[t+tt+10:t+tt+tt+39])
-					else:
-						self.imagelist.append(line[t+tt+10:t+tt+tt+40])
+					if self.feed == "xta":
+						e = line.find("zip'")
+						self.imagelist.append(line[t+tt+10:e+3])
+									
 		else:
 			self["key_blue"].setText(_("Delete"))
 			self["key_yellow"].setText(_("Devices"))

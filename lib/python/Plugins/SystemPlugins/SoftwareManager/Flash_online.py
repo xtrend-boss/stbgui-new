@@ -22,8 +22,7 @@ distro = getImageDistro()
 
 #############################################################################################################
 image = 2 # 0=openATV / 1=openMips / 2=xtrendalliance
-#feedurl_xta = 'http://image.xtrend-support-source.com/image-alliance/xta4'
-feedurl_xta = 'http://beta.xtrend-support-source.com/'
+feedurl_xta = 'http://image.xtrend-support-source.com/image-alliance/xta4'
 imagePath = '/hdd/images'
 flashPath = '/hdd/images/flash'
 flashTmp = '/hdd/images/tmp'
